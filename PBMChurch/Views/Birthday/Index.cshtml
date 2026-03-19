@@ -1,0 +1,389 @@
+@{
+    ViewData["Title"] = "Today's Wishes";
+}
+
+<div class="page-header">
+    <h2><i class="fas fa-heart me-2"></i>Today's Wishes</h2>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Today's Birthdays</h5>
+                <h2>@(ViewBag.TodayBirthdays?.Count ?? 0)</h2>
+                <p class="mb-0">members celebrating today</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Today's Anniversaries</h5>
+                <h2>@(ViewBag.TodayAnniversaries?.Count ?? 0)</h2>
+                <p class="mb-0">couples celebrating today</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <ul class="nav nav-tabs mb-3" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link @(ViewBag.ActiveTab == "today" || string.IsNullOrEmpty(ViewBag.ActiveTab) ? "active" : "")" data-bs-toggle="tab" href="#today">Today</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ViewBag.ActiveTab == "week" ? "active" : "")" data-bs-toggle="tab" href="#week">This Week</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ViewBag.ActiveTab == "month" ? "active" : "")" data-bs-toggle="tab" href="#month">This Month</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ViewBag.ActiveTab == "birthdays" ? "active" : "")" data-bs-toggle="tab" href="#birthdays">All Birthdays</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ViewBag.ActiveTab == "anniversaries" ? "active" : "")" data-bs-toggle="tab" href="#anniversaries">All Anniversaries</a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <div class="tab-pane fade @(ViewBag.ActiveTab == "today" || string.IsNullOrEmpty(ViewBag.ActiveTab) ? "show active" : "")" id="today">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-birthday-cake text-primary"></i> Birthdays</h5>
+                        @if (ViewBag.TodayBirthdays != null && ViewBag.TodayBirthdays.Count > 0)
+                        {
+                            @foreach (var member in ViewBag.TodayBirthdays)
+                            {
+                                <div class="card border-primary mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title">@member.Name</h6>
+                                        <p class="mb-1"><strong>Church:</strong> @member.ChurchName</p>
+                                        <p class="mb-1"><strong>Phone:</strong> @member.Phone</p>
+                                        <p class="mb-1"><strong>Age:</strong> @member.Age years</p>
+                                        <button class="btn btn-sm btn-success" onclick="window.open('tel:@member.Phone')">
+                                            <i class="fas fa-phone"></i> Call & Wish
+                                        </button>
+                                        <button class="btn btn-sm btn-primary" onclick="sendWhatsApp('@member.Phone', 'Happy Birthday @member.Name!')">
+                                            <i class="fab fa-whatsapp"></i> Send SMS
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center text-muted py-3">
+                                <p>No birthdays today</p>
+                            </div>
+                        }
+                    </div>
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-ring text-success"></i> Anniversaries</h5>
+                        @if (ViewBag.TodayAnniversaries != null && ViewBag.TodayAnniversaries.Count > 0)
+                        {
+                            @foreach (var member in ViewBag.TodayAnniversaries)
+                            {
+                                <div class="card border-success mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title">@member.Name</h6>
+                                        <p class="mb-1"><strong>Church:</strong> @member.ChurchName</p>
+                                        <p class="mb-1"><strong>Phone:</strong> @member.Phone</p>
+                                        <p class="mb-1"><strong>Years:</strong> @member.Years years</p>
+                                        <button class="btn btn-sm btn-success" onclick="window.open('tel:@member.Phone')">
+                                            <i class="fas fa-phone"></i> Call & Wish
+                                        </button>
+                                        <button class="btn btn-sm btn-primary" onclick="sendWhatsApp('@member.Phone', 'Happy Anniversary @member.Name!')">
+                                            <i class="fab fa-whatsapp"></i> Send SMS
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center text-muted py-3">
+                                <p>No anniversaries today</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade @(ViewBag.ActiveTab == "week" ? "show active" : "")" id="week">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-birthday-cake text-primary"></i> Birthdays</h5>
+                        @if (ViewBag.Next7Days != null && ViewBag.Next7Days.Count > 0)
+                        {
+                            @foreach (var member in ViewBag.Next7Days)
+                            {
+                                <div class="card mb-2">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>@member.Name</strong><br>
+                                                <small>@member.DateOfBirth?.ToString("MMM dd") - @member.ChurchName</small>
+                                            </div>
+                                            <span class="bg-info text-white" style="font-size: 0.7rem; padding: 2px 4px; border-radius: 2px; display: inline-block;">@member.DaysUntil days</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted">No birthdays this week</p>
+                        }
+                    </div>
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-ring text-success"></i> Anniversaries</h5>
+                        @if (ViewBag.Next7DaysAnniversaries != null && ViewBag.Next7DaysAnniversaries.Count > 0)
+                        {
+                            @foreach (var member in ViewBag.Next7DaysAnniversaries)
+                            {
+                                <div class="card mb-2">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>@member.Name</strong><br>
+                                                <small>@member.AnniversaryDate?.ToString("MMM dd") - @member.ChurchName</small>
+                                            </div>
+                                            <span class="bg-success text-white" style="font-size: 0.7rem; padding: 2px 4px; border-radius: 2px; display: inline-block;">@member.DaysUntil days</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted">No anniversaries this week</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade @(ViewBag.ActiveTab == "month" ? "show active" : "")" id="month">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-birthday-cake text-primary"></i> Birthdays</h5>
+                        @if (ViewBag.Next30Days != null && ViewBag.Next30Days.Count > 0)
+                        {
+                            @foreach (var member in ViewBag.Next30Days)
+                            {
+                                <div class="card mb-2">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>@member.Name</strong><br>
+                                                <small>@(((DateTime?)member.NextBirthday)?.ToString("MMM dd") ?? "") - @member.ChurchName</small>
+                                            </div>
+                                            <span class="bg-info text-white" style="font-size: 0.7rem; padding: 2px 4px; border-radius: 2px; display: inline-block;">@member.DaysUntil days</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted">No birthdays this month</p>
+                        }
+                    </div>
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-ring text-success"></i> Anniversaries</h5>
+                        @if (ViewBag.Next30DaysAnniversaries != null && ViewBag.Next30DaysAnniversaries.Count > 0)
+                        {
+                            @foreach (var member in ViewBag.Next30DaysAnniversaries)
+                            {
+                                <div class="card mb-2">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>@member.Name</strong><br>
+                                                <small>@(((DateTime?)member.NextAnniversary)?.ToString("MMM dd") ?? "") - @member.ChurchName</small>
+                                            </div>
+                                            <span class="bg-success text-white" style="font-size: 0.7rem; padding: 2px 4px; border-radius: 2px; display: inline-block;">@member.DaysUntil days</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted">No anniversaries this month</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade @(ViewBag.ActiveTab == "birthdays" ? "show active" : "")" id="birthdays">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <button class="btn btn-link text-decoration-none p-0 w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#birthdayFilterCollapse">
+                            <i class="fas fa-filter me-2"></i>Birthday Filters
+                            <i class="fas fa-chevron-down float-end mt-1"></i>
+                        </button>
+                    </div>
+                    <div class="collapse show" id="birthdayFilterCollapse">
+                        <div class="card-body">
+                            <form method="get" class="mb-3">
+                                <input type="hidden" name="tab" value="birthdays" />
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <select name="churchId" class="form-select">
+                                            <option value="">All Churches</option>
+                                            @if (ViewBag.Churches != null)
+                                            {
+                                                foreach (var church in (IEnumerable<dynamic>)ViewBag.Churches)
+                                                {
+                                                    <option value="@church.ChurchId" selected="@(ViewBag.SelectedChurchId == church.ChurchId.ToString())">
+                                                        @church.ChurchName
+                                                    </option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" name="search" class="form-control" placeholder="Search by name..." value="@ViewBag.SearchTerm" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button class="btn btn-primary w-100" type="submit">
+                                            <i class="fas fa-search"></i> Search
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Birth Date</th>
+                                <th>Church</th>
+                                <th>Phone</th>
+                                <th>Current Age</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.MonthBirthdays != null && ViewBag.MonthBirthdays.Count > 0)
+                            {
+                                @foreach (var member in ViewBag.MonthBirthdays)
+                                {
+                                    <tr>
+                                        <td>@member.Name</td>
+                                        <td>@member.DateOfBirth?.ToString("dd-MM-yyyy")</td>
+                                        <td>@member.ChurchName</td>
+                                        <td>@member.Phone</td>
+                                        <td>@member.Age years</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No records found</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade @(ViewBag.ActiveTab == "anniversaries" ? "show active" : "")" id="anniversaries">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <button class="btn btn-link text-decoration-none p-0 w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#anniversaryFilterCollapse">
+                            <i class="fas fa-filter me-2"></i>Anniversary Filters
+                            <i class="fas fa-chevron-down float-end mt-1"></i>
+                        </button>
+                    </div>
+                    <div class="collapse show" id="anniversaryFilterCollapse">
+                        <div class="card-body">
+                            <form method="get" class="mb-3">
+                                <input type="hidden" name="tab" value="anniversaries" />
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <select name="churchId" class="form-select">
+                                            <option value="">All Churches</option>
+                                            @if (ViewBag.Churches != null)
+                                            {
+                                                foreach (var church in (IEnumerable<dynamic>)ViewBag.Churches)
+                                                {
+                                                    <option value="@church.ChurchId" selected="@(ViewBag.SelectedChurchId == church.ChurchId.ToString())">
+                                                        @church.ChurchName
+                                                    </option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" name="search" class="form-control" placeholder="Search by name..." value="@ViewBag.SearchTerm" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button class="btn btn-primary w-100" type="submit">
+                                            <i class="fas fa-search"></i> Search
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Anniversary Date</th>
+                                <th>Church</th>
+                                <th>Phone</th>
+                                <th>Years Married</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.MonthAnniversaries != null && ViewBag.MonthAnniversaries.Count > 0)
+                            {
+                                @foreach (var member in ViewBag.MonthAnniversaries)
+                                {
+                                    <tr>
+                                        <td>@member.Name</td>
+                                        <td>@member.AnniversaryDate?.ToString("dd-MM-yyyy")</td>
+                                        <td>@member.ChurchName</td>
+                                        <td>@member.Phone</td>
+                                        <td>@member.Years years</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No records found</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function sendWhatsApp(phone, message) {
+            var cleanPhone = phone.replace(/[^0-9]/g, '');
+            // Add +91 country code for Indian numbers if not already present
+            if (cleanPhone.length === 10 && !cleanPhone.startsWith('91')) {
+                cleanPhone = '91' + cleanPhone;
+            }
+            var whatsappUrl = 'https://wa.me/' + cleanPhone + '?text=' + encodeURIComponent(message);
+            window.open(whatsappUrl, '_blank');
+        }
+    </script>
+}

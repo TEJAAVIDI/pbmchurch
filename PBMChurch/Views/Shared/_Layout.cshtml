@@ -1,0 +1,601 @@
+﻿@{
+    var isAuthenticated = Context.Request.Cookies.ContainsKey("jwt_token");
+    var userName = Context.Session.GetString("FullName");
+    var userRole = Context.Session.GetString("UserRole") ?? "Admin"; // Get from session first
+    
+    // If session is empty but JWT exists, get name and role from JWT
+    if (string.IsNullOrEmpty(userName) && isAuthenticated)
+    {
+        userName = User.Identity?.Name ?? "Admin";
+        userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "Admin";
+    }
+    else if (string.IsNullOrEmpty(userRole) && isAuthenticated)
+    {
+        // Get role from JWT token if not in session
+        var token = Context.Request.Cookies["jwt_token"];
+        if (!string.IsNullOrEmpty(token))
+        {
+            try
+            {
+                var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                var jsonToken = handler.ReadJwtToken(token);
+                userRole = jsonToken.Claims.FirstOrDefault(x => x.Type == System.Security.Claims.ClaimTypes.Role)?.Value ?? "Admin";
+            }
+            catch
+            {
+                userRole = "Admin";
+            }
+        }
+    }
+    
+    userName = userName ?? "Admin";
+}
+<!DOCTYPE html>
+<html lang="en" style="height: 100%; overflow-x: hidden;">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>@ViewData["Title"] - PBM Church</title>
+    <link rel="icon" type="image/png" href="~/favicon.png" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/modern-standards.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body style="min-height: 100%; display: flex; flex-direction: column; overflow-x: hidden;">
+    @if (isAuthenticated)
+    {
+        <!-- Fixed Top Navbar (Only shown when logged in) -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+            <div class="container-fluid">
+                <!-- Sidebar Toggle Button -->
+                <button class="btn btn-link text-white me-3" id="sidebarToggle" type="button">
+                    <i class="fas fa-bars fa-lg"></i>
+                </button>
+
+                <!-- Brand -->
+                <a class="navbar-brand" href="@(userRole == "Admin" ? Url.Action("Index", "Dashboard") : Url.Action("Index", "Attendance"))">
+                    <i class="fas fa-church me-2"></i>
+                    <span class="d-none d-md-inline">PBM Church</span>
+                </a>
+
+                <!-- Global Search - Desktop Only -->
+                <div class="d-none d-md-flex flex-grow-1 mx-3 position-relative" style="max-width: 500px;">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                        <input type="text" 
+                               id="globalSearch" 
+                               class="form-control border-start-0" 
+                               placeholder="Search members, churches..." 
+                               autocomplete="off" />
+                    </div>
+                    <div id="searchResults" class="position-absolute w-100 bg-white shadow-lg rounded mt-1" style="display: none; max-height: 500px; overflow-y: auto; z-index: 9999; top: 100%;"></div>
+                </div>
+
+                <!-- Right Side Menu -->
+                <div class="ms-auto d-flex align-items-center">
+                    <!-- Mobile Search Icon -->
+                    <button class="btn btn-outline-light btn-sm me-2 d-md-none" type="button" id="mobileSearchToggle">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    
+                    <!-- Username -->
+                    <span class="text-white me-3 d-none d-md-inline">
+                        <i class="fas fa-user-circle me-1"></i>
+                        @userName
+                    </span>
+                    
+                    <!-- Notifications -->
+                    <div class="dropdown me-2">
+                        <button class="btn btn-outline-light btn-sm position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown">
+                            <i class="fas fa-bell"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notificationBadge" style="display: none;">0</span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end" style="width: 300px; max-height: 400px; overflow-y: auto;">
+                            <h6 class="dropdown-header">Today's Events</h6>
+                            <div id="notificationList">
+                                <div class="dropdown-item text-center text-muted">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Logout -->
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-sign-out-alt me-1"></i>
+                            <span class="d-none d-md-inline">Logout</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Mobile Search Modal -->
+        <div id="mobileSearchModal" class="mobile-search-modal" style="display: none;">
+            <div class="mobile-search-header">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
+                    <input type="text" 
+                           id="mobileGlobalSearch" 
+                           class="form-control border-start-0" 
+                           placeholder="Search members, churches..." 
+                           autocomplete="off" />
+                    <button class="btn btn-outline-secondary" type="button" id="closeMobileSearch">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="mobileSearchResults" class="mobile-search-results"></div>
+        </div>
+
+        <!-- Sidebar (Only shown when logged in) -->
+        <div class="sidebar" id="sidebar">
+            <ul class="sidebar-menu">
+                @if (userRole == "Admin")
+                {
+                    <li>
+                        <a href="@Url.Action("Index", "Dashboard")" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active" : "")">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("Index", "Church")" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Church" ? "active" : "")">
+                            <i class="fas fa-church"></i>
+                            <span>Churches</span>
+                        </a>
+                    </li>
+                }
+                <li>
+                    <a href="@Url.Action("Index", "Member")" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Member" ? "active" : "")">
+                        <i class="fas fa-users"></i>
+                        <span>Members</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("Index", "Attendance")" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Attendance" ? "active" : "")">
+                        <i class="fas fa-clipboard-check"></i>
+                        <span>Attendance</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("Index", "PrayerRequest")" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "PrayerRequest" ? "active" : "")">
+                        <i class="fas fa-praying-hands"></i>
+                        <span>Prayer Requests</span>
+                    </a>
+                </li>
+                @if (userRole == "Admin")
+                {
+                    <li>
+                        <a href="@Url.Action("Index", "UserManagement")" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "UserManagement" ? "active" : "")">
+                            <i class="fas fa-user-shield"></i>
+                            <span>User Management</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-dropdown">
+                        <a href="#financeSubmenu" data-bs-toggle="collapse" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Finance" ? "active" : "")">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <span>Finance</span>
+                            <i class="fas fa-chevron-down ms-auto"></i>
+                        </a>
+                        <ul class="collapse sidebar-submenu" id="financeSubmenu">
+                            <li><a href="@Url.Action("Income", "Finance")"><i class="fas fa-arrow-up"></i> Income</a></li>
+                            <li><a href="@Url.Action("Expense", "Finance")"><i class="fas fa-arrow-down"></i> Expense</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("Index", "Birthday")" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Birthday" ? "active" : "")">
+                            <i class="fas fa-birthday-cake"></i>
+                            <span>Birthdays</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("Index", "TaskCalendar")" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "TaskCalendar" ? "active" : "")">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Task Calendar</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("Index", "Verse")" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Verse" ? "active" : "")">
+                            <i class="fas fa-comments"></i>
+                            <span>Messages</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("Index", "Wishes")" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Wishes" ? "active" : "")">
+                            <i class="fas fa-heart"></i>
+                            <span>Wishes Management</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("Index", "Gallery")" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Gallery" ? "active" : "")">
+                            <i class="fas fa-images"></i>
+                            <span>Gallery</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-dropdown">
+                        <a href="#automationSubmenu" data-bs-toggle="collapse" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Automation" ? "active" : "")">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                            <i class="fas fa-chevron-down ms-auto"></i>
+                        </a>
+                        <ul class="collapse sidebar-submenu" id="automationSubmenu">
+                            <li><a href="@Url.Action("Index", "ChurchActivity")"><i class="fas fa-calendar-alt"></i> Church Activities</a></li>
+                            <li><a href="@Url.Action("Settings", "Automation")"><i class="fas fa-sliders-h"></i> Automation Settings</a></li>
+                            <li><a href="@Url.Action("ShowGroups", "Automation")"><i class="fab fa-whatsapp"></i> WhatsApp Groups</a></li>
+                        </ul>
+                    </li>
+                }
+                }
+            </ul>
+        </div>
+
+        <!-- Sidebar Overlay for Mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content with sidebar space -->
+        <main role="main" class="main-content" style="flex: 1;">
+            <div class="container-fluid">
+                @Html.AntiForgeryToken()
+                <!-- Alert Messages -->
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>@TempData["Error"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                @RenderBody()
+            </div>
+        </main>
+    }
+    else
+    {
+        <!-- No sidebar/navbar for unauthenticated users -->
+        <main role="main" style="flex: 1;">
+            @RenderBody()
+        </main>
+    }
+
+    <footer class="footer py-3 bg-light border-top" style="margin-top: auto;">
+        <div class="container-fluid text-center">
+            <span class="text-muted" style="font-size: 0.813rem;">&copy; 2024 - PBM Church Management System - All Rights Reserved</span>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @if (isAuthenticated)
+    {
+        <script src="~/js/site.js" asp-append-version="true"></script>
+        <script>
+            // Global Search Functionality
+            let searchTimeout;
+            
+            // Desktop Search
+            $('#globalSearch').on('input', function() {
+                clearTimeout(searchTimeout);
+                const query = $(this).val().trim();
+                
+                if (query.length < 2) {
+                    $('#searchResults').hide();
+                    return;
+                }
+                
+                searchTimeout = setTimeout(function() {
+                    performSearch(query, '#searchResults');
+                }, 300);
+            });
+            
+            // Mobile Search
+            $('#mobileGlobalSearch').on('input', function() {
+                clearTimeout(searchTimeout);
+                const query = $(this).val().trim();
+                
+                if (query.length < 2) {
+                    $('#mobileSearchResults').html('');
+                    return;
+                }
+                
+                searchTimeout = setTimeout(function() {
+                    performSearch(query, '#mobileSearchResults');
+                }, 300);
+            });
+            
+            // Mobile Search Toggle
+            $('#mobileSearchToggle').on('click', function() {
+                $('#mobileSearchModal').fadeIn(200);
+                $('#mobileGlobalSearch').focus();
+            });
+            
+            $('#closeMobileSearch').on('click', function() {
+                $('#mobileSearchModal').fadeOut(200);
+                $('#mobileGlobalSearch').val('');
+                $('#mobileSearchResults').html('');
+            });
+            
+            function performSearch(query, targetElement) {
+                $.get('@Url.Action("GlobalSearch", "Search")', { query: query }, function(data) {
+                    if (data.success && data.totalCount > 0) {
+                        displaySearchResults(data, targetElement);
+                    } else {
+                        $(targetElement).html('<div class="p-3 text-center text-muted">No results found</div>').show();
+                    }
+                });
+            }
+            
+            function displaySearchResults(data, targetElement) {
+                let html = '';
+                
+                // Modules/Navigation Section
+                if (data.modules && data.modules.length > 0) {
+                    html += '<div class="search-section"><div class="search-section-header"><i class="fas fa-compass me-2"></i>Navigation</div>';
+                    data.modules.forEach(function(module) {
+                        html += `<a href="${module.url}" class="search-item">
+                            <div class="d-flex align-items-center">
+                                <i class="fas ${module.icon} fa-2x text-warning me-3"></i>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold">${module.name}</div>
+                                    <small class="text-muted">Go to ${module.name}</small>
+                                </div>
+                            </div>
+                        </a>`;
+                    });
+                    html += '</div>';
+                }
+                
+                // Members Section
+                if (data.members.length > 0) {
+                    html += '<div class="search-section"><div class="search-section-header"><i class="fas fa-users me-2"></i>Members</div>';
+                    data.members.forEach(function(member) {
+                        html += `<a href="/Member/Details/${member.id}" class="search-item">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user-circle fa-2x text-primary me-3"></i>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold">${member.name}</div>
+                                    <small class="text-muted">ID: ${member.userId} • ${member.church}</small>
+                                </div>
+                            </div>
+                        </a>`;
+                    });
+                    html += '</div>';
+                }
+                
+                // Churches Section
+                if (data.churches.length > 0) {
+                    html += '<div class="search-section"><div class="search-section-header"><i class="fas fa-church me-2"></i>Churches</div>';
+                    data.churches.forEach(function(church) {
+                        html += `<a href="/Church/Details/${church.id}" class="search-item">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-church fa-2x text-success me-3"></i>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold">${church.name}</div>
+                                    <small class="text-muted">${church.location}</small>
+                                </div>
+                            </div>
+                        </a>`;
+                    });
+                    html += '</div>';
+                }
+                
+                // Prayer Requests Section
+                if (data.prayers.length > 0) {
+                    html += '<div class="search-section"><div class="search-section-header"><i class="fas fa-praying-hands me-2"></i>Prayer Requests</div>';
+                    data.prayers.forEach(function(prayer) {
+                        html += `<a href="/PrayerRequest/Index" class="search-item">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-praying-hands fa-2x text-info me-3"></i>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold">${prayer.title || 'Prayer Request'}</div>
+                                    <small class="text-muted">${prayer.memberName} • ${prayer.status}</small>
+                                </div>
+                            </div>
+                        </a>`;
+                    });
+                    html += '</div>';
+                }
+                
+                $(targetElement).html(html).show();
+            }
+            
+            // Close search results when clicking outside
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('#globalSearch, #searchResults').length) {
+                    $('#searchResults').hide();
+                }
+            });
+            
+            // Clear search on ESC key
+            $('#globalSearch, #mobileGlobalSearch').on('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if ($(this).attr('id') === 'mobileGlobalSearch') {
+                        $('#closeMobileSearch').click();
+                    } else {
+                        $(this).val('');
+                        $('#searchResults').hide();
+                    }
+                }
+            });
+            
+            // Notification System
+            function loadNotifications() {
+                $.get('@Url.Action("GetNotifications", "Dashboard")', function(data) {
+                    const badge = $('#notificationBadge');
+                    const list = $('#notificationList');
+                    
+                    if (data && data.count > 0) {
+                        badge.text(data.count).show();
+                        let html = '';
+                        for (let i = 0; i < data.items.length; i++) {
+                            const item = data.items[i];
+                            let iconClass, colorClass, itemUrl;
+                            
+                            if (item.type === 'Birthday') {
+                                iconClass = 'birthday-cake';
+                                colorClass = 'warning';
+                                itemUrl = '@Url.Action("Details", "Member")' + '/' + item.id;
+                            } else if (item.type === 'PrayerRequest') {
+                                iconClass = 'praying-hands';
+                                colorClass = 'info';
+                                itemUrl = '@Url.Action("Index", "PrayerRequest")';
+                            } else {
+                                iconClass = 'heart';
+                                colorClass = 'danger';
+                                itemUrl = '@Url.Action("Details", "Member")' + '/' + item.id;
+                            }
+                            const message = $('<div>').html(item.message || 'No message').text();
+                            html += '<div class="dropdown-item d-flex justify-content-between align-items-center" style="padding: 0.5rem 1rem;">' +
+                                   '<a href="' + itemUrl + '" class="text-decoration-none flex-grow-1" style="padding: 0;">' +
+                                   '<i class="fas fa-' + iconClass + ' me-2 text-' + colorClass + '"></i>' +
+                                   '<span>' + message + '</span>' +
+                                   '</a>' +
+                                   '<div class="btn-group btn-group-sm ms-2" role="group">' +
+                                   '<button type="button" class="btn btn-outline-primary btn-read" data-id="' + item.id + '" data-type="' + item.type + '" title="Mark as Read">' +
+                                   '<i class="fas fa-check"></i>' +
+                                   '</button>' +
+                                   '</div>' +
+                                   '</div>';
+                        }
+                        list.html(html);
+                        
+                        // Attach event handlers
+                        $('.btn-read').off('click').on('click', function(e) {
+                            console.log('Read button clicked');
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const id = $(this).data('id');
+                            const type = $(this).data('type');
+                            console.log('ID:', id, 'Type:', type);
+                            markAsRead(id, type);
+                        });
+                        
+                        $('.btn-remove').off('click').on('click', function(e) {
+                            console.log('Remove button clicked');
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const id = $(this).data('id');
+                            const type = $(this).data('type');
+                            console.log('ID:', id, 'Type:', type);
+                            removeNotification(id, type);
+                        });
+                    } else {
+                        badge.hide();
+                        list.html('<div class="dropdown-item text-center text-muted">No events today</div>');
+                    }
+                }).fail(function(xhr, status, error) {
+                    console.error('Notification error:', error);
+                    $('#notificationList').html('<div class="dropdown-item text-center text-muted">Error loading notifications</div>');
+                });
+            }
+            
+            function markAsRead(memberId, type) {
+                console.log('markAsRead called:', memberId, type);
+                const token = $('input[name="__RequestVerificationToken"]').val();
+                console.log('Token:', token);
+                $.ajax({
+                    url: '@Url.Action("MarkNotificationRead", "Dashboard")',
+                    type: 'POST',
+                    data: {
+                        memberId: memberId,
+                        type: type,
+                        __RequestVerificationToken: token
+                    },
+                    success: function(response) {
+                        console.log('markAsRead response:', response);
+                        if (response.success) {
+                            loadNotifications();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('markAsRead error:', error, xhr.responseText);
+                    }
+                });
+            }
+            
+            function removeNotification(memberId, type) {
+                console.log('removeNotification called:', memberId, type);
+                if (confirm('Remove this notification?')) {
+                    const token = $('input[name="__RequestVerificationToken"]').val();
+                    console.log('Token:', token);
+                    $.ajax({
+                        url: '@Url.Action("RemoveNotification", "Dashboard")',
+                        type: 'POST',
+                        data: {
+                            memberId: memberId,
+                            type: type,
+                            __RequestVerificationToken: token
+                        },
+                        success: function(response) {
+                            console.log('removeNotification response:', response);
+                            if (response.success) {
+                                loadNotifications();
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('removeNotification error:', error, xhr.responseText);
+                        }
+                    });
+                }
+            }
+            
+            // Theme Toggle
+            function initTheme() {
+                const theme = localStorage.getItem('theme') || 'light';
+                applyTheme(theme);
+                updateThemeIcon(theme);
+            }
+            
+            function applyTheme(theme) {
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                document.body.className = document.body.className.replace(/theme-\w+/g, '');
+                document.body.classList.add('theme-' + theme);
+                
+                if (theme === 'dark') {
+                    document.body.style.backgroundColor = '#1a1a1a';
+                    document.body.style.color = '#ffffff';
+                } else {
+                    document.body.style.backgroundColor = '#ffffff';
+                    document.body.style.color = '#000000';
+                }
+            }
+            
+            function updateThemeIcon(theme) {
+                const icon = $('#themeIcon');
+                icon.removeClass('fa-moon fa-sun');
+                icon.addClass(theme === 'dark' ? 'fa-sun' : 'fa-moon');
+            }
+            
+            $('#themeToggle').click(function() {
+                const currentTheme = localStorage.getItem('theme') || 'light';
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                localStorage.setItem('theme', newTheme);
+                applyTheme(newTheme);
+                updateThemeIcon(newTheme);
+            });
+            
+            // Initialize on page load
+            $(document).ready(function() {
+                initTheme();
+                loadNotifications();
+                // Refresh notifications every 5 minutes
+                setInterval(loadNotifications, 300000);
+            });
+        </script>
+    }
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,161 @@
+@model PBMChurch.Models.GalleryImage
+
+@{
+    ViewData["Title"] = "Edit Gallery Image";
+}
+
+<div class="page-header">
+    <h2><i class="fas fa-edit me-2"></i>Edit Gallery Image</h2>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to Gallery
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="ImageId" />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-image me-1"></i>Change Image (Optional)
+                        </label>
+                        <input type="file" name="imageFile" class="form-control" accept="image/*" 
+                               onchange="previewImage(event)">
+                        <small class="form-text text-muted">
+                            Leave empty to keep current image. Allowed: JPG, PNG, GIF. Max: 5MB
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label">
+                            <i class="fas fa-heading me-1"></i>Title
+                        </label>
+                        <input asp-for="Title" class="form-control" placeholder="Enter image title" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">
+                            <i class="fas fa-align-left me-1"></i>Description
+                        </label>
+                        <textarea asp-for="Description" class="form-control" rows="3" 
+                                  placeholder="Enter image description"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ChurchId" class="form-label">
+                            <i class="fas fa-church me-1"></i>Church
+                        </label>
+                        <select asp-for="ChurchId" class="form-select">
+                            <option value="">All Churches</option>
+                            @foreach (var church in ViewBag.Churches)
+                            {
+                                <option value="@church.ChurchId" selected="@(church.ChurchId == Model.ChurchId)">
+                                    @church.ChurchName
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Category" class="form-label">
+                            <i class="fas fa-tag me-1"></i>Category
+                        </label>
+                        <select asp-for="Category" class="form-select">
+                            <option value="">Select Category</option>
+                            <option value="Service" selected="@(Model.Category == "Service")">Service</option>
+                            <option value="Worship" selected="@(Model.Category == "Worship")">Worship</option>
+                            <option value="Community" selected="@(Model.Category == "Community")">Community</option>
+                            <option value="Event" selected="@(Model.Category == "Event")">Event</option>
+                            <option value="Youth" selected="@(Model.Category == "Youth")">Youth</option>
+                            <option value="Outreach" selected="@(Model.Category == "Outreach")">Outreach</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="DisplayOrder" class="form-label">
+                            <i class="fas fa-sort-numeric-up me-1"></i>Display Order
+                        </label>
+                        <input asp-for="DisplayOrder" type="number" class="form-control" min="0" />
+                        <small class="form-text text-muted">Lower numbers appear first</small>
+                        <span asp-validation-for="DisplayOrder" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                        <label asp-for="IsActive" class="form-check-label">
+                            Active (Show on landing page)
+                        </label>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Update Image
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card bg-light">
+                        <div class="card-header">
+                            <i class="fas fa-eye me-2"></i>Current Image
+                        </div>
+                        <div class="card-body text-center">
+                            <img id="imagePreview" src="@Model.ImagePath" alt="Current Image" 
+                                 class="img-fluid rounded shadow" style="max-height: 400px;">
+                        </div>
+                    </div>
+
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <i class="fas fa-info-circle me-2"></i>Image Information
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-2">
+                                <strong>Uploaded:</strong> @Model.UploadedDate.ToString("MMM dd, yyyy hh:mm tt")
+                            </p>
+                            <p class="mb-2">
+                                <strong>Path:</strong> <code>@Model.ImagePath</code>
+                            </p>
+                            <p class="mb-0">
+                                <strong>Status:</strong> 
+                                @if (Model.IsActive)
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Inactive</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagePreview').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+}

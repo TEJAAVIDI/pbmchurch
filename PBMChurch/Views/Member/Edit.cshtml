@@ -1,0 +1,313 @@
+@model PBMChurch.Models.Member
+@{
+    ViewData["Title"] = "Edit Member";
+}
+
+<div class="page-header">
+    <h2><i class="fas fa-user-edit me-2"></i>Edit Member</h2>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to List
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                    <input type="hidden" asp-for="MemberId" />
+                    <input type="hidden" asp-for="CreatedDate" />
+                    <input type="hidden" asp-for="ProfileImage" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-bold">Profile Image</label>
+                            <div class="d-flex align-items-center gap-3">
+                                <div>
+                                    @if (!string.IsNullOrEmpty(Model.ProfileImage))
+                                    {
+                                        <img id="imagePreview" src="@Model.ProfileImage" alt="Profile Preview" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        var nameParts = Model.Name?.Split(' ') ?? new[] { "U" };
+                                        var initials = "";
+                                        if (nameParts.Length >= 2 && nameParts[0].Length > 0 && nameParts[nameParts.Length - 1].Length > 0)
+                                        {
+                                            initials = (nameParts[0].Substring(0, 1) + nameParts[nameParts.Length - 1].Substring(0, 1)).ToUpper();
+                                        }
+                                        else if (!string.IsNullOrEmpty(Model.Name) && Model.Name.Length > 0)
+                                        {
+                                            initials = Model.Name.Substring(0, Math.Min(2, Model.Name.Length)).ToUpper();
+                                        }
+                                        else
+                                        {
+                                            initials = "U";
+                                        }
+                                        var colors = new[] { "bg-primary", "bg-success", "bg-danger", "bg-warning", "bg-info" };
+                                        var colorIndex = Math.Abs((Model.Name ?? "").GetHashCode()) % colors.Length;
+                                        
+                                        <div id="imagePreview" class="img-thumbnail d-flex align-items-center justify-content-center @colors[colorIndex] text-white fw-bold" style="width: 60px; height: 60px; font-size: 20px;">
+                                            @initials
+                                        </div>
+                                    }
+                                </div>
+                                <div class="flex-grow-1">
+                                    <input type="file" name="profileImage" id="profileImage" class="form-control" accept="image/*" />
+                                    <small class="text-muted">Choose file to change member photo</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="UserId" class="form-label fw-bold"></label>
+                                    <input asp-for="UserId" class="form-control" readonly style="background-color: #e9ecef;" />
+                                    <small class="text-muted">User ID cannot be changed</small>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Name" class="form-label fw-bold"></label>
+                                    <input asp-for="Name" class="form-control" />
+                                    <span asp-validation-for="Name" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ChurchId" class="form-label fw-bold">Church</label>
+                            <select asp-for="ChurchId" asp-items="ViewBag.Churches" class="form-select">
+                                <option value="">Select Church</option>
+                            </select>
+                            <span asp-validation-for="ChurchId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Phone" class="form-label fw-bold"></label>
+                            <input asp-for="Phone" class="form-control" />
+                            <span asp-validation-for="Phone" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Family" class="form-label fw-bold"></label>
+                            <input asp-for="Family" class="form-control" />
+                            <span asp-validation-for="Family" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Gender" class="form-label fw-bold"></label>
+                            <select asp-for="Gender" class="form-select">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                            <span asp-validation-for="Gender" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="DateOfBirth" class="form-label fw-bold"></label>
+                            <input name="DateOfBirth" type="date" class="form-control" value="@(Model.DateOfBirth?.ToString("yyyy-MM-dd") ?? "")" />
+                            <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="AnniversaryDate" class="form-label fw-bold"></label>
+                            <input name="AnniversaryDate" type="date" class="form-control" value="@(Model.AnniversaryDate?.ToString("yyyy-MM-dd") ?? "")" />
+                            <span asp-validation-for="AnniversaryDate" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="JoinedDate" class="form-label fw-bold"></label>
+                            <input name="JoinedDate" type="date" class="form-control" value="@Model.JoinedDate.ToString("yyyy-MM-dd")" />
+                            <span asp-validation-for="JoinedDate" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Status" class="form-label fw-bold"></label>
+                            <select asp-for="Status" class="form-select">
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Email" class="form-label fw-bold"></label>
+                            <input asp-for="Email" type="email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <!-- Family Members Section -->
+                    <hr class="my-4" />
+                    <h4 class="mb-3"><i class="fas fa-users me-2"></i>Family Members</h4>
+                    <div id="familyContainer">
+                        <!-- Existing family members will be loaded here -->
+                    </div>
+                    <button type="button" class="btn btn-info mb-3" onclick="addFamilyRow()">
+                        <i class="fas fa-plus me-1"></i>Add Family Member
+                    </button>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Update Member
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Image preview
+        document.getElementById('profileImage').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagePreview').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Load existing family members
+        $(document).ready(function() {
+            loadFamilyMembers(@Model.MemberId);
+        });
+
+        // Load existing family members
+        function loadFamilyMembers(memberId) {
+            $.get('@Url.Action("GetFamilyInfo", "Member")', { memberId: memberId }, function(data) {
+                const container = $('#familyContainer');
+                container.empty();
+                data.forEach(function(family, index) {
+                    addExistingFamilyRow(family, index);
+                });
+            });
+        }
+
+        function addExistingFamilyRow(family, index) {
+            const container = document.getElementById('familyContainer');
+            const familyDiv = document.createElement('div');
+            familyDiv.className = 'card mb-3';
+            
+            // Format dates for input fields (YYYY-MM-DD)
+            const dobDisplay = family.dateOfBirth ? formatDateForInput(family.dateOfBirth) : '';
+            const anniversaryDisplay = family.anniversaryDate ? formatDateForInput(family.anniversaryDate) : '';
+            
+            familyDiv.innerHTML = `
+                <div class="card-body">
+                    <input type="hidden" name="FamilyMembers[${index}].RelatedMemberId" value="${family.relatedMemberId || ''}" />
+                    <div class="row">
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Name</label>
+                            <input name="FamilyMembers[${index}].Name" class="form-control" value="${family.name || ''}" required />
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Relation</label>
+                            <input name="FamilyMembers[${index}].Relation" class="form-control" value="${family.relation || ''}" required />
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Gender</label>
+                            <select name="FamilyMembers[${index}].Gender" class="form-select">
+                                <option value="">Select</option>
+                                <option value="Male" ${(family.gender || '').toLowerCase() === 'male' ? 'selected' : ''}>Male</option>
+                                <option value="Female" ${(family.gender || '').toLowerCase() === 'female' ? 'selected' : ''}>Female</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Date of Birth</label>
+                            <input name="FamilyMembers[${index}].DateOfBirth" class="form-control" type="date" value="${dobDisplay}" />
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Anniversary</label>
+                            <input name="FamilyMembers[${index}].AnniversaryDate" class="form-control" type="date" value="${anniversaryDisplay}" />
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Phone</label>
+                            <input name="FamilyMembers[${index}].Phone" class="form-control" value="${family.phone || ''}" />
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Email</label>
+                            <input name="FamilyMembers[${index}].Email" class="form-control" type="email" value="${family.email || ''}" />
+                        </div>
+                        <div class="col-12 text-center">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.card').remove()">
+                                <i class="fas fa-trash me-1"></i>Delete Family Member
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(familyDiv);
+        }
+
+        function addFamilyRow() {
+            const container = document.getElementById('familyContainer');
+            const familyIndex = container.children.length;
+            const familyDiv = document.createElement('div');
+            familyDiv.className = 'card mb-3';
+            familyDiv.innerHTML = `
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Name</label>
+                            <input name="FamilyMembers[${familyIndex}].Name" class="form-control" required />
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Relation</label>
+                            <input name="FamilyMembers[${familyIndex}].Relation" class="form-control" required />
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Gender</label>
+                            <select name="FamilyMembers[${familyIndex}].Gender" class="form-select">
+                                <option value="">Select</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Date of Birth</label>
+                            <input name="FamilyMembers[${familyIndex}].DateOfBirth" class="form-control" type="date" />
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Anniversary</label>
+                            <input name="FamilyMembers[${familyIndex}].AnniversaryDate" class="form-control" type="date" />
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Phone</label>
+                            <input name="FamilyMembers[${familyIndex}].Phone" class="form-control" />
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Email</label>
+                            <input name="FamilyMembers[${familyIndex}].Email" class="form-control" type="email" />
+                        </div>
+                        <div class="col-12 text-center">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.card').remove()">
+                                <i class="fas fa-trash me-1"></i>Delete Family Member
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(familyDiv);
+        }
+    </script>
+}

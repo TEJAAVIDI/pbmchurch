@@ -1,0 +1,243 @@
+@{
+    ViewData["Title"] = "Financial Summary";
+}
+
+<div class="page-header">
+    <h2><i class="fas fa-chart-line me-2"></i>Financial Summary</h2>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Church</label>
+                <select name="churchId" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Churches</option>
+                    @if (ViewBag.Churches != null)
+                    {
+                        foreach (var item in (Microsoft.AspNetCore.Mvc.Rendering.SelectList)ViewBag.Churches)
+                        {
+                            <option value="@item.Value" selected="@(item.Selected)">@item.Text</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Month</label>
+                <select name="month" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Months</option>
+                    @for (int m = 1; m <= 12; m++)
+                    {
+                        <option value="@m" selected="@(ViewBag.SelectedMonth == m)">@(new DateTime(2000, m, 1).ToString("MMMM"))</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Year</label>
+                <select name="year" class="form-select" onchange="this.form.submit()">
+                    @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 5; y--)
+                    {
+                        <option value="@y" selected="@(ViewBag.SelectedYear == y)">@y</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <a href="/Finance/Summary" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-times me-2"></i>Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card border-success">
+            <div class="card-body text-center">
+                <i class="fas fa-arrow-up fa-3x text-success mb-3"></i>
+                <h6 class="text-muted">Total Income</h6>
+                <h2 class="text-success">₹ @((ViewBag.TotalIncome ?? 0m).ToString("N2"))</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-danger">
+            <div class="card-body text-center">
+                <i class="fas fa-arrow-down fa-3x text-danger mb-3"></i>
+                <h6 class="text-muted">Total Expenses</h6>
+                <h2 class="text-danger">₹ @((ViewBag.TotalExpenses ?? 0m).ToString("N2"))</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card @(ViewBag.NetProfit >= 0 ? "border-primary" : "border-warning")">
+            <div class="card-body text-center">
+                <i class="fas fa-@(ViewBag.NetProfit >= 0 ? "plus" : "minus")-circle fa-3x @(ViewBag.NetProfit >= 0 ? "text-primary" : "text-warning") mb-3"></i>
+                <h6 class="text-muted">@(ViewBag.NetProfit >= 0 ? "Net Profit" : "Net Loss")</h6>
+                <h2 class="@(ViewBag.NetProfit >= 0 ? "text-primary" : "text-warning")">
+                    ₹ @(Math.Abs(ViewBag.NetProfit ?? 0m).ToString("N2"))
+                </h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewBag.SelectedChurchId))
+{
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        Showing data for: <strong>@ViewBag.SelectedChurchName</strong>
+    </div>
+}
+
+@if (ViewBag.SelectedMonth.HasValue)
+{
+    <div class="alert alert-info">
+        <i class="fas fa-calendar me-2"></i>
+        Period: <strong>@(new DateTime(2000, ViewBag.SelectedMonth.Value, 1).ToString("MMMM")) @ViewBag.SelectedYear</strong>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-money-bill-wave me-2"></i>Income Breakdown</h5>
+            </div>
+            <div class="card-body">
+                @if (ViewBag.IncomeBySource != null && ((List<dynamic>)ViewBag.IncomeBySource).Any())
+                {
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Source</th>
+                                <th class="text-end">Amount</th>
+                                <th class="text-end">%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in (List<dynamic>)ViewBag.IncomeBySource)
+                            {
+                                var percentage = ViewBag.TotalIncome > 0 ? (item.Total / ViewBag.TotalIncome * 100) : 0;
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-success">@item.Source</span>
+                                    </td>
+                                    <td class="text-end"><strong>₹ @item.Total.ToString("N2")</strong></td>
+                                    <td class="text-end">@percentage.ToString("N1")%</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="text-muted text-center">No income data available</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Expense Breakdown</h5>
+            </div>
+            <div class="card-body">
+                @if (ViewBag.ExpenseByCategory != null && ((List<dynamic>)ViewBag.ExpenseByCategory).Any())
+                {
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th class="text-end">Amount</th>
+                                <th class="text-end">%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in (List<dynamic>)ViewBag.ExpenseByCategory)
+                            {
+                                var percentage = ViewBag.TotalExpenses > 0 ? (item.Total / ViewBag.TotalExpenses * 100) : 0;
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-warning text-dark">@item.Category</span>
+                                    </td>
+                                    <td class="text-end"><strong>₹ @item.Total.ToString("N2")</strong></td>
+                                    <td class="text-end">@percentage.ToString("N1")%</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="text-muted text-center">No expense data available</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-church me-2"></i>Church-wise Summary</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Church</th>
+                        <th class="text-end">Income</th>
+                        <th class="text-end">Expenses</th>
+                        <th class="text-end">Net</th>
+                        <th class="text-end">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.ChurchSummary != null && ((List<dynamic>)ViewBag.ChurchSummary).Any())
+                    {
+                        @foreach (var item in (List<dynamic>)ViewBag.ChurchSummary)
+                        {
+                            var net = item.Income - item.Expenses;
+                            <tr>
+                                <td><strong>@item.ChurchName</strong></td>
+                                <td class="text-end text-success">₹ @item.Income.ToString("N2")</td>
+                                <td class="text-end text-danger">₹ @item.Expenses.ToString("N2")</td>
+                                <td class="text-end @(net >= 0 ? "text-primary" : "text-warning")">
+                                    <strong>₹ @Math.Abs(net).ToString("N2")</strong>
+                                </td>
+                                <td class="text-end">
+                                    @if (net >= 0)
+                                    {
+                                        <span class="badge bg-success">Profit</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">Loss</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No church data available</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="/Finance/Income" class="btn btn-success me-2">
+        <i class="fas fa-money-bill-wave me-2"></i>View Income
+    </a>
+    <a href="/Finance/Expense" class="btn btn-danger">
+        <i class="fas fa-receipt me-2"></i>View Expenses
+    </a>
+</div>

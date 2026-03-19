@@ -1,0 +1,369 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\PBMChurch.bundle.scp.css",
+      "PackagePath": "staticwebassets\\PBMChurch.bundle.scp.css"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\css\\modern-standards.css",
+      "PackagePath": "staticwebassets\\css\\modern-standards.css"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\css\\site.css",
+      "PackagePath": "staticwebassets\\css\\site.css"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\favicon.ico",
+      "PackagePath": "staticwebassets\\favicon.ico"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\images\\Causoral\\C1.jpg",
+      "PackagePath": "staticwebassets\\images\\Causoral\\C1.jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\images\\Causoral\\C2.jpg",
+      "PackagePath": "staticwebassets\\images\\Causoral\\C2.jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\images\\Causoral\\c4.jpg",
+      "PackagePath": "staticwebassets\\images\\Causoral\\c4.jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\images\\Causoral\\c5.jpg",
+      "PackagePath": "staticwebassets\\images\\Causoral\\c5.jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\images\\Causoral\\hq720.jpg",
+      "PackagePath": "staticwebassets\\images\\Causoral\\hq720.jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\images\\Causoral\\images (2).jpg",
+      "PackagePath": "staticwebassets\\images\\Causoral\\images (2).jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\images\\Causoral\\images (3).jpg",
+      "PackagePath": "staticwebassets\\images\\Causoral\\images (3).jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\images\\Causoral\\images.jpg",
+      "PackagePath": "staticwebassets\\images\\Causoral\\images.jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\images\\Causoral\\photo_6165459368145521882_y.jpg",
+      "PackagePath": "staticwebassets\\images\\Causoral\\photo_6165459368145521882_y.jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\images\\Causoral\\photo_6165459368145521883_y.jpg",
+      "PackagePath": "staticwebassets\\images\\Causoral\\photo_6165459368145521883_y.jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\images\\Causoral\\photo_6165459368145521885_y.jpg",
+      "PackagePath": "staticwebassets\\images\\Causoral\\photo_6165459368145521885_y.jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\images\\Causoral\\photo_6165459368145521887_y.jpg",
+      "PackagePath": "staticwebassets\\images\\Causoral\\photo_6165459368145521887_y.jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\images\\Causoral\\photo_6165459368145521891_y.jpg",
+      "PackagePath": "staticwebassets\\images\\Causoral\\photo_6165459368145521891_y.jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\images\\gallery\\4accc665-6735-4161-b359-fc114cc29007.jpg",
+      "PackagePath": "staticwebassets\\images\\gallery\\4accc665-6735-4161-b359-fc114cc29007.jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\images\\gallery\\5a192579-45bb-4bcc-b2d0-3bcd44804cc7.jpg",
+      "PackagePath": "staticwebassets\\images\\gallery\\5a192579-45bb-4bcc-b2d0-3bcd44804cc7.jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\images\\gallery\\6cf9f1be-b96f-4f85-aa44-788ea16ee0aa.jpg",
+      "PackagePath": "staticwebassets\\images\\gallery\\6cf9f1be-b96f-4f85-aa44-788ea16ee0aa.jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\images\\gallery\\ba7dc28a-d783-4380-b9cb-fb0b4e32ded7.jpg",
+      "PackagePath": "staticwebassets\\images\\gallery\\ba7dc28a-d783-4380-b9cb-fb0b4e32ded7.jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\images\\gallery\\d4f25a1f-34f8-47c1-a3d0-f5f90f89e7c8.jpg",
+      "PackagePath": "staticwebassets\\images\\gallery\\d4f25a1f-34f8-47c1-a3d0-f5f90f89e7c8.jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\images\\gallery\\f74c8b3a-d989-4378-a781-68bba2279513.jpg",
+      "PackagePath": "staticwebassets\\images\\gallery\\f74c8b3a-d989-4378-a781-68bba2279513.jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\js\\site.js",
+      "PackagePath": "staticwebassets\\js\\site.js"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\LICENSE",
+      "PackagePath": "staticwebassets\\lib\\bootstrap"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.css"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.css.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.js"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.js.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.min.js"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.min.js.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\jquery-validation-unobtrusive\\LICENSE.txt",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\LICENSE.txt"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.js"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.min.js"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\jquery-validation\\LICENSE.md",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\LICENSE.md"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\jquery-validation\\dist\\additional-methods.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\additional-methods.js"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\jquery-validation\\dist\\additional-methods.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\additional-methods.min.js"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\jquery-validation\\dist\\jquery.validate.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\jquery.validate.js"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\jquery-validation\\dist\\jquery.validate.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\jquery.validate.min.js"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\jquery\\LICENSE.txt",
+      "PackagePath": "staticwebassets\\lib\\jquery\\LICENSE.txt"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\jquery\\dist\\jquery.js",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.js"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\jquery\\dist\\jquery.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.min.js"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\lib\\jquery\\dist\\jquery.min.map",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.min.map"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\prayer-request.html",
+      "PackagePath": "staticwebassets\\prayer-request.html"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\uploads\\members\\0002_905de2b0-e789-4e07-99bc-8ff4938df511.webp",
+      "PackagePath": "staticwebassets\\uploads\\members\\0002_905de2b0-e789-4e07-99bc-8ff4938df511.webp"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\uploads\\members\\A01_9382de11-7a4f-43ad-853b-e12a5690a8c9.jpg",
+      "PackagePath": "staticwebassets\\uploads\\members\\A01_9382de11-7a4f-43ad-853b-e12a5690a8c9.jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\uploads\\members\\A03_e50c84a2-949e-48e0-afeb-0f3bcfb6d90c..jpg",
+      "PackagePath": "staticwebassets\\uploads\\members\\A03_e50c84a2-949e-48e0-afeb-0f3bcfb6d90c..jpg"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\uploads\\members\\A16_4374960b-1cf8-4e40-ad51-e896001956f6.PNG",
+      "PackagePath": "staticwebassets\\uploads\\members\\A16_4374960b-1cf8-4e40-ad51-e896001956f6.PNG"
+    },
+    {
+      "Id": "C:\\Users\\aviditej\\source\\repos\\PBMChurch\\PBMChurch\\PBMChurch\\wwwroot\\uploads\\members\\GCC002_251cfc9c-a8a2-4dce-8f4e-cf726875ba4c.jpg",
+      "PackagePath": "staticwebassets\\uploads\\members\\GCC002_251cfc9c-a8a2-4dce-8f4e-cf726875ba4c.jpg"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.PBMChurch.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.PBMChurch.props",
+      "PackagePath": "build\\PBMChurch.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.PBMChurch.props",
+      "PackagePath": "buildMultiTargeting\\PBMChurch.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.PBMChurch.props",
+      "PackagePath": "buildTransitive\\PBMChurch.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

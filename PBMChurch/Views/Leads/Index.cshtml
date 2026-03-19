@@ -1,0 +1,65 @@
+@model List<object>
+@{
+    ViewData["Title"] = "Facebook Leads";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4><i class="fab fa-facebook me-2"></i>Facebook Leads</h4>
+                    <form asp-action="SyncFacebook" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-sync me-2"></i>Sync Facebook
+                        </button>
+                    </form>
+                </div>
+                <div class="card-body">
+                    @if (Model != null && Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Phone</th>
+                                        <th>Email</th>
+                                        <th>Lead ID</th>
+                                        <th>Created Time</th>
+                                        <th>Source</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (dynamic lead in Model)
+                                    {
+                                        <tr>
+                                            <td>@(lead.Name ?? "N/A")</td>
+                                            <td>@(lead.Phone ?? "N/A")</td>
+                                            <td>@(lead.Email ?? "N/A")</td>
+                                            <td>@(lead.LeadId ?? "N/A")</td>
+                                            <td>@(lead.CreatedTime ?? "N/A")</td>
+                                            <td><span class="badge bg-primary">@(lead.Source ?? "Facebook")</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-3">
+                            <p class="text-muted">Total leads: @Model.Count</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fab fa-facebook fa-3x text-muted mb-3"></i>
+                            <h5>No Facebook leads found</h5>
+                            <p class="text-muted">Leads will appear here when received via Facebook webhook</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

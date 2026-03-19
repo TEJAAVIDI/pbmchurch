@@ -1,0 +1,525 @@
+@model PBMChurch.Models.ViewModels.TaskCalendarViewModel
+@{
+    ViewData["Title"] = "Task Calendar";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-calendar-alt me-2"></i>Task Calendar</h2>
+                <button type="button" class="btn btn-primary" onclick="openCreateModal()">
+                    <i class="fas fa-plus me-2"></i>Add New Task
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Calendar Section -->
+        <div class="col-lg-8 col-md-7">
+            <div class="card">
+                <div class="card-body p-0">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Tasks Section -->
+        <div class="col-lg-4 col-md-5">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tasks me-2"></i>
+                        <span id="selectedDateTitle">Today's Tasks</span>
+                        <span class="badge bg-light text-primary ms-2" id="taskCountBadge">@Model.TodayTaskCount</span>
+                    </h5>
+                </div>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    <div id="todayTasks">
+                        @if (Model.TodayTasks.Any())
+                        {
+                            @foreach (var task in Model.TodayTasks)
+                            {
+                                <div class="task-card mb-3 p-3 border rounded" style="border-left: 4px solid @task.TypeColor !important;">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">
+                                                <i class="@task.TypeIcon me-2" style="color: @task.TypeColor;"></i>
+                                                @task.Summary
+                                            </h6>
+                                            @if (!string.IsNullOrEmpty(task.Description))
+                                            {
+                                                <p class="text-muted small mb-2">@task.Description</p>
+                                            }
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-clock me-1"></i>@task.FormattedTime
+                                                </small>
+                                                @if (!string.IsNullOrEmpty(task.RelatedName))
+                                                {
+                                                    <small class="text-info">@task.RelatedName</small>
+                                                }
+                                            </div>
+                                        </div>
+                                        @if (task.TaskId > 0)
+                                        {
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="#" onclick="editTask(@task.TaskId)">
+                                                        <i class="fas fa-edit me-2"></i>Edit
+                                                    </a></li>
+                                                    <li><a class="dropdown-item" href="#" onclick="moveTask(@task.TaskId)">
+                                                        <i class="fas fa-arrows-alt me-2"></i>Move
+                                                    </a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item text-danger" href="#" onclick="deleteTask(@task.TaskId)">
+                                                        <i class="fas fa-trash me-2"></i>Delete
+                                                    </a></li>
+                                                </ul>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center text-muted py-4">
+                                <i class="fas fa-calendar-check fa-3x mb-3"></i>
+                                <p>No tasks scheduled for today</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Container -->
+<div id="modalContainer"></div>
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+    <style>
+        .fc-toolbar {
+            padding: 1rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .fc-toolbar-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .fc-button-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        
+        .fc-button-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        
+        .fc-daygrid-day-number {
+            font-weight: 600;
+        }
+        
+        .fc-event {
+            border-radius: 4px;
+            font-size: 0.85rem;
+            padding: 2px 4px;
+        }
+        
+        .fc-event-title {
+            font-weight: 500;
+        }
+        
+        .task-card {
+            transition: all 0.2s ease;
+            background: #fff;
+        }
+        
+        .task-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+        
+        .fc-daygrid-day.fc-day-today {
+            background-color: rgba(0, 123, 255, 0.1);
+        }
+        
+        .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+            background-color: #007bff;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2px;
+        }
+        
+        .fc-daygrid-day.selected {
+            background-color: rgba(40, 167, 69, 0.1);
+        }
+        
+        .fc-daygrid-day.selected .fc-daygrid-day-number {
+            background-color: #28a745;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2px;
+        }
+        
+        .fc-daygrid-day-number {
+            text-decoration: none !important;
+            color: #495057 !important;
+            position: relative;
+        }
+        
+        .fc-daygrid-day-number:hover {
+            text-decoration: none !important;
+        }
+        
+        .task-count-indicator {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: 500;
+            margin-top: 0px;
+            display: inline-block;
+        }
+        
+        .fc-daygrid-day {
+            height: 70px !important;
+            opacity: 0.4;
+            transition: opacity 0.3s ease;
+        }
+        
+        .fc-daygrid-day.fc-day-today {
+            opacity: 1;
+        }
+        
+        .fc-daygrid-day.selected {
+            opacity: 1;
+        }
+        
+        .fc-daygrid-day-frame {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100%;
+            padding: 0px;
+            gap: 0px;
+        }
+        
+        .fc-daygrid-day-top {
+            margin: 0px !important;
+            padding: 0px !important;
+        }
+        
+        .fc-daygrid-day-events {
+            margin: 0px !important;
+            padding: 0px !important;
+        }
+        
+        .fc-daygrid-day-number {
+            margin: 0px !important;
+            padding: 2px !important;
+            line-height: 1 !important;
+        }
+        
+        .fc-col-header-cell {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        @@media (max-width: 768px) {
+            .fc-toolbar {
+                flex-direction: column;
+                gap: 0.5rem;
+                padding: 0.5rem;
+            }
+            
+            .fc-toolbar-chunk {
+                display: flex;
+                justify-content: center;
+            }
+            
+            .fc-daygrid-day {
+                height: 50px !important;
+            }
+            
+            .fc-daygrid-day-frame {
+                padding: 0px;
+            }
+            
+            .task-count-indicator {
+                font-size: 8px;
+                padding: 1px 3px;
+            }
+            
+            .task-card {
+                margin-bottom: 0.5rem !important;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script>
+        let calendar;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                height: 'auto',
+                events: function(info, successCallback, failureCallback) {
+                    fetch(`/TaskCalendar/GetEvents?start=${info.startStr}&end=${info.endStr}`)
+                        .then(response => response.json())
+                        .then(data => successCallback(data))
+                        .catch(error => failureCallback(error));
+                },
+                eventClick: function(info) {
+                    if (info.event.extendedProps.taskType === 'Custom') {
+                        editTask(info.event.id);
+                    } else {
+                        showEventDetails(info.event);
+                    }
+                },
+                dateClick: function(info) {
+                    // Set all days to low opacity
+                    document.querySelectorAll('.fc-daygrid-day').forEach(el => {
+                        el.classList.remove('selected');
+                    });
+                    
+                    // Add selection to clicked date
+                    info.dayEl.classList.add('selected');
+                    
+                    loadDayTasks(info.dateStr);
+                },
+                eventDidMount: function(info) {
+                    // Add tooltip
+                    info.el.title = info.event.extendedProps.description || info.event.title;
+                },
+                datesSet: function(info) {
+                    // Add task count indicators after calendar renders
+                    setTimeout(() => {
+                        addTaskCountIndicators();
+                    }, 100);
+                }
+            });
+            
+            calendar.render();
+        });
+        
+        function loadDayTasks(dateStr) {
+            fetch(`/TaskCalendar/GetDayTasks?date=${dateStr}`)
+                .then(response => response.json())
+                .then(data => {
+                    updateTaskPanel(data, dateStr);
+                });
+        }
+        
+        function updateTaskPanel(tasks, dateStr) {
+            const container = document.getElementById('todayTasks');
+            const badge = document.getElementById('taskCountBadge');
+            const title = document.getElementById('selectedDateTitle');
+            
+            // Update title based on selected date
+            const selectedDate = new Date(dateStr);
+            const today = new Date();
+            const isToday = selectedDate.toDateString() === today.toDateString();
+            
+            if (isToday) {
+                title.textContent = "Today's Tasks";
+            } else {
+                const day = selectedDate.getDate();
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const month = monthNames[selectedDate.getMonth()];
+                const year = selectedDate.getFullYear();
+                
+                const suffix = day % 10 === 1 && day !== 11 ? 'st' : 
+                              day % 10 === 2 && day !== 12 ? 'nd' : 
+                              day % 10 === 3 && day !== 13 ? 'rd' : 'th';
+                
+                title.textContent = `${day}${suffix} ${month} ${year} Tasks`;
+            }
+            
+            badge.textContent = tasks.length;
+            
+            if (tasks.length === 0) {
+                const dateText = title.textContent.includes('Today') ? 'today' : 'this day';
+                container.innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-calendar-check fa-3x mb-3"></i>
+                        <p>No tasks scheduled for ${dateText}</p>
+                    </div>`;
+                return;
+            }
+            
+            let html = '';
+            tasks.forEach(task => {
+                html += `
+                    <div class="task-card mb-3 p-3 border rounded" style="border-left: 4px solid ${task.typeColor} !important;">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">
+                                    <i class="${task.typeIcon} me-2" style="color: ${task.typeColor};"></i>
+                                    ${task.summary}
+                                </h6>
+                                ${task.description ? `<p class="text-muted small mb-2">${task.description}</p>` : ''}
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>${task.formattedTime}
+                                    </small>
+                                    ${task.relatedName ? `<small class="text-info">${task.relatedName}</small>` : ''}
+                                </div>
+                            </div>
+                            ${task.taskId > 0 ? `
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" onclick="editTask(${task.taskId})">
+                                            <i class="fas fa-edit me-2"></i>Edit
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="moveTask(${task.taskId})">
+                                            <i class="fas fa-arrows-alt me-2"></i>Move
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="#" onclick="deleteTask(${task.taskId})">
+                                            <i class="fas fa-trash me-2"></i>Delete
+                                        </a></li>
+                                    </ul>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>`;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function openCreateModal() {
+            fetch('/TaskCalendar/Create')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('modalContainer').innerHTML = html;
+                    new bootstrap.Modal(document.getElementById('createTaskModal')).show();
+                });
+        }
+        
+        function editTask(taskId) {
+            fetch(`/TaskCalendar/Edit/${taskId}`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('modalContainer').innerHTML = html;
+                    new bootstrap.Modal(document.getElementById('editTaskModal')).show();
+                });
+        }
+        
+        function moveTask(taskId) {
+            fetch(`/TaskCalendar/Move/${taskId}`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('modalContainer').innerHTML = html;
+                    new bootstrap.Modal(document.getElementById('moveTaskModal')).show();
+                });
+        }
+        
+        function deleteTask(taskId) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                fetch(`/TaskCalendar/Delete/${taskId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        calendar.refetchEvents();
+                        location.reload();
+                    }
+                });
+            }
+        }
+        
+        function showEventDetails(event) {
+            alert(`${event.title}\n\n${event.extendedProps.description || 'No description available'}`);
+        }
+        
+        function addTaskCountIndicators() {
+            // Get current view dates
+            const view = calendar.view;
+            const start = view.activeStart;
+            const end = view.activeEnd;
+            
+            // Fetch task counts for visible dates
+            fetch(`/TaskCalendar/GetEvents?start=${start.toISOString().split('T')[0]}&end=${end.toISOString().split('T')[0]}`)
+                .then(response => response.json())
+                .then(events => {
+                    // Count tasks per date
+                    const taskCounts = {};
+                    events.forEach(event => {
+                        const eventDate = event.start.split('T')[0];
+                        taskCounts[eventDate] = (taskCounts[eventDate] || 0) + 1;
+                    });
+                    
+                    // Add indicators to calendar dates
+                    document.querySelectorAll('.fc-daygrid-day').forEach(dayEl => {
+                        const dateStr = dayEl.getAttribute('data-date');
+                        const dayNumberEl = dayEl.querySelector('.fc-daygrid-day-number');
+                        
+                        if (dateStr && taskCounts[dateStr] && dayNumberEl) {
+                            // Remove existing indicator
+                            const existingIndicator = dayEl.querySelector('.task-count-indicator');
+                            if (existingIndicator) {
+                                existingIndicator.remove();
+                            }
+                            
+                            // Add new indicator below date number
+                            const indicator = document.createElement('div');
+                            indicator.className = 'task-count-indicator';
+                            indicator.textContent = `${taskCounts[dateStr]} task${taskCounts[dateStr] > 1 ? 's' : ''}`;
+                            
+                            // Add to day frame (parent of day number)
+                            const dayFrame = dayEl.querySelector('.fc-daygrid-day-frame');
+                            if (dayFrame) {
+                                dayFrame.appendChild(indicator);
+                            }
+                        }
+                    });
+                })
+                .catch(error => console.error('Error loading task counts:', error));
+        }
+    </script>
+}

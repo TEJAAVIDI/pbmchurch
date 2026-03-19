@@ -1,0 +1,89 @@
+@{
+    ViewData["Title"] = "WhatsApp Groups";
+}
+
+<div class="page-header">
+    <h2><i class="fas fa-users me-2"></i>Your WhatsApp Groups</h2>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger">
+                        <strong>Error:</strong> @ViewBag.Error
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <strong>API URL:</strong> <code>@ViewBag.Url</code><br>
+                        <strong>Status Code:</strong> @ViewBag.StatusCode
+                    </div>
+                    
+                    @if (ViewBag.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        <h5>Groups Found:</h5>
+                        <div id="groupsTable"></div>
+                        
+                        <script>
+                            const responseData = @Html.Raw(ViewBag.Response);
+                            const groups = responseData.filter(chat => chat.id && chat.id.endsWith('@@g.us'));
+                            
+                            if (groups.length === 0) {
+                                document.getElementById('groupsTable').innerHTML = '<p class="text-warning">No groups found in your WhatsApp account.</p>';
+                            } else {
+                                let html = '<div class="table-responsive"><table class="table table-striped">';
+                                html += '<thead><tr><th>Group Name</th><th>Group ID</th><th>Action</th></tr></thead><tbody>';
+                                
+                                groups.forEach(group => {
+                                    html += `<tr>
+                                        <td><strong>${group.name || 'Unknown'}</strong></td>
+                                        <td><code>${group.id}</code></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary" onclick="copyToClipboard('${group.id}')">
+                                                <i class="fas fa-copy"></i> Copy ID
+                                            </button>
+                                        </td>
+                                    </tr>`;
+                                });
+                                
+                                html += '</tbody></table></div>';
+                                html += '<div class="alert alert-success mt-3">';
+                                html += '<i class="fas fa-info-circle"></i> <strong>How to use:</strong><br>';
+                                html += '1. Click "Copy ID" next to the group you want to use<br>';
+                                html += '2. Go back to <a href="/Automation/Settings">Automation Settings</a><br>';
+                                html += '3. Paste the Group ID in the "Birthday Group ID" field<br>';
+                                html += '4. Save settings';
+                                html += '</div>';
+                                
+                                document.getElementById('groupsTable').innerHTML = html;
+                            }
+                            
+                            function copyToClipboard(text) {
+                                navigator.clipboard.writeText(text).then(() => {
+                                    alert('✅ Copied to clipboard: ' + text);
+                                }).catch(err => {
+                                    alert('❌ Failed to copy: ' + err);
+                                });
+                            }
+                        </script>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger">
+                            <strong>API Response:</strong>
+                            <pre>@ViewBag.Response</pre>
+                        </div>
+                    }
+                }
+                
+                <a href="/Automation/Settings" class="btn btn-secondary mt-3">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Settings
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

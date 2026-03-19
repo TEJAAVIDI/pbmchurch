@@ -1,0 +1,323 @@
+@model IEnumerable<PBMChurch.Models.PrayerRequest>
+
+@{
+    ViewData["Title"] = "Prayer Requests";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-praying-hands me-2"></i>Prayer Requests</h2>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i>Add Prayer Request
+                </a>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <button class="btn btn-link text-decoration-none p-0 w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#prayerFilterCollapse">
+                        <i class="fas fa-filter me-2"></i>Filters
+                        <i class="fas fa-chevron-down float-end mt-1"></i>
+                    </button>
+                </div>
+                <div class="collapse show" id="prayerFilterCollapse">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label class="form-label">Filter by Church</label>
+                                <select id="churchFilter" class="form-select">
+                                    <option value="">All Churches</option>
+                                    <option value="-1">No Church (General)</option>
+                                    @foreach (var church in ViewBag.Churches as SelectList)
+                                    {
+                                        <option value="@church.Value">@church.Text</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Filter by Status</label>
+                                <select id="statusFilter" class="form-select">
+                                    <option value="">All Status</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Answered">Answered</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Search Name</label>
+                                <input type="text" id="nameSearch" class="form-control" placeholder="Search by name...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prayer Requests List -->
+            <div class="card">
+                <div class="card-body">
+                    <!-- Desktop Table -->
+                    <div class="table-responsive d-none d-md-block">
+                        <table class="table table-striped" id="prayerRequestsTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Name</th>
+                                    <th>Church</th>
+                                    <th>Phone</th>
+                                    <th>Title & Request</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var request in Model)
+                                {
+                                    var actualChurchId = request.ChurchId ?? request.Member?.ChurchId;
+                                    <tr data-church-id="@(actualChurchId?.ToString() ?? "-1")" 
+                                        data-status="@request.Status" 
+                                        data-name="@((request.Name ?? request.Member?.Name ?? "").ToLower())">
+                                        <td>@request.RequestDate.ToString("dd/MM/yyyy")</td>
+                                        <td>
+                                            @(request.Name ?? request.Member?.Name ?? "Unknown")
+                                            @if (request.Member != null)
+                                            {
+                                                <small class="text-muted">(Member)</small>
+                                            }
+                                            else
+                                            {
+                                                <small class="text-success">(Public)</small>
+                                            }
+                                        </td>
+                                        <td>@(request.Church?.ChurchName ?? request.Member?.Church?.ChurchName ?? "No Church")</td>
+                                        <td>@(request.Phone ?? request.Member?.Phone)</td>
+                                        <td>
+                                            <div class="request-details" style="max-width: 300px;">
+                                                @if (!string.IsNullOrEmpty(request.Title))
+                                                {
+                                                    <strong>@request.Title</strong><br>
+                                                }
+                                                @if (request.Request.Length > 100)
+                                                {
+                                                    <span class="short-text">@request.Request.Substring(0, 100)...</span>
+                                                    <span class="full-text d-none">@request.Request</span>
+                                                    <br><a href="#" class="toggle-text text-primary">Read More</a>
+                                                }
+                                                else
+                                                {
+                                                    @request.Request
+                                                }
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-@(request.Status == "Active" ? "warning" : request.Status == "Answered" ? "success" : "secondary")">
+                                                @request.Status
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-1">
+                                                @if (request.Status == "Active" || request.Status == "Pending")
+                                                {
+                                                    <button class="btn btn-sm btn-success" onclick="updateStatus(@request.RequestId, 'Answered')" title="Mark Answered">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                }
+                                                <button class="btn btn-sm btn-secondary" onclick="updateStatus(@request.RequestId, 'Closed')" title="Close">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                                @if (!string.IsNullOrEmpty(request.Phone ?? request.Member?.Phone))
+                                                {
+                                                    <a href="https://wa.me/@((request.Phone ?? request.Member?.Phone)?.Replace("+", "").Replace(" ", "").Replace("-", ""))?text=Hello @(request.Name ?? request.Member?.Name)" 
+                                                       class="btn btn-sm btn-success" 
+                                                       target="_blank" 
+                                                       title="WhatsApp">
+                                                        <i class="fab fa-whatsapp"></i>
+                                                    </a>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Mobile Card View -->
+                    <div class="d-md-none" id="prayerRequestsCards">
+                        @if (Model.Any())
+                        {
+                            @foreach (var request in Model)
+                            {
+                                var actualChurchId = request.ChurchId ?? request.Member?.ChurchId;
+                                <div class="card mb-3 prayer-card" 
+                                     data-church-id="@(actualChurchId?.ToString() ?? "-1")" 
+                                     data-status="@request.Status" 
+                                     data-name="@((request.Name ?? request.Member?.Name ?? "").ToLower())">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="card-title mb-0">
+                                                @(request.Name ?? request.Member?.Name ?? "Unknown")
+                                                @if (request.Member != null)
+                                                {
+                                                    <small class="text-muted">(Member)</small>
+                                                }
+                                                else
+                                                {
+                                                    <small class="text-success">(Public)</small>
+                                                }
+                                            </h6>
+                                            <span class="badge bg-@(request.Status == "Active" ? "warning" : request.Status == "Answered" ? "success" : "secondary")">
+                                                @request.Status
+                                            </span>
+                                        </div>
+                                        <p class="mb-1"><strong>Date:</strong> @request.RequestDate.ToString("dd/MM/yyyy")</p>
+                                        <p class="mb-1"><strong>Church:</strong> @(request.Church?.ChurchName ?? request.Member?.Church?.ChurchName ?? "No Church")</p>
+                                        <p class="mb-2"><strong>Phone:</strong> @(request.Phone ?? request.Member?.Phone ?? "N/A")</p>
+                                        
+                                        @if (!string.IsNullOrEmpty(request.Title))
+                                        {
+                                            <p class="mb-1"><strong>Title:</strong> @request.Title</p>
+                                        }
+                                        
+                                        <div class="request-details mb-3">
+                                            <strong>Request:</strong><br>
+                                            @if (request.Request.Length > 150)
+                                            {
+                                                <span class="short-text">@request.Request.Substring(0, 150)...</span>
+                                                <span class="full-text d-none">@request.Request</span>
+                                                <br><a href="#" class="toggle-text text-primary">Read More</a>
+                                            }
+                                            else
+                                            {
+                                                @request.Request
+                                            }
+                                        </div>
+                                        
+                                        <div class="d-flex gap-2">
+                                            @if (request.Status == "Active" || request.Status == "Pending")
+                                            {
+                                                <button class="btn btn-sm btn-success" onclick="updateStatus(@request.RequestId, 'Answered')">
+                                                    <i class="fas fa-check me-1"></i>Mark Answered
+                                                </button>
+                                            }
+                                            <button class="btn btn-sm btn-secondary" onclick="updateStatus(@request.RequestId, 'Closed')">
+                                                <i class="fas fa-times me-1"></i>Close
+                                            </button>
+                                            @if (!string.IsNullOrEmpty(request.Phone ?? request.Member?.Phone))
+                                            {
+                                                <a href="https://wa.me/@((request.Phone ?? request.Member?.Phone)?.Replace("+", "").Replace(" ", "").Replace("-", ""))?text=Hello @(request.Name ?? request.Member?.Name)" 
+                                                   class="btn btn-sm btn-success" 
+                                                   target="_blank">
+                                                    <i class="fab fa-whatsapp me-1"></i>WhatsApp
+                                                </a>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="card">
+                                <div class="card-body text-center py-5">
+                                    <i class="fas fa-praying-hands fa-3x text-muted mb-3 d-block"></i>
+                                    <p class="text-muted">No prayer requests found</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+<script>
+    document.getElementById('churchFilter').addEventListener('change', filterTable);
+    document.getElementById('statusFilter').addEventListener('change', filterTable);
+    document.getElementById('nameSearch').addEventListener('input', filterTable);
+
+    function filterTable() {
+        const churchFilter = document.getElementById('churchFilter').value;
+        const statusFilter = document.getElementById('statusFilter').value;
+        const nameSearch = document.getElementById('nameSearch').value.toLowerCase();
+        
+        // Filter table rows (desktop)
+        const rows = document.querySelectorAll('#prayerRequestsTable tbody tr');
+        rows.forEach(row => {
+            const churchId = row.getAttribute('data-church-id');
+            const status = row.getAttribute('data-status');
+            const name = row.getAttribute('data-name');
+
+            let showRow = true;
+            if (churchFilter && churchFilter !== churchId) showRow = false;
+            if (statusFilter && statusFilter !== status) showRow = false;
+            if (nameSearch && !name.includes(nameSearch)) showRow = false;
+
+            row.style.display = showRow ? '' : 'none';
+        });
+        
+        // Filter cards (mobile)
+        const cards = document.querySelectorAll('.prayer-card');
+        cards.forEach(card => {
+            const churchId = card.getAttribute('data-church-id');
+            const status = card.getAttribute('data-status');
+            const name = card.getAttribute('data-name');
+
+            let showCard = true;
+            if (churchFilter && churchFilter !== churchId) showCard = false;
+            if (statusFilter && statusFilter !== status) showCard = false;
+            if (nameSearch && !name.includes(nameSearch)) showCard = false;
+
+            card.style.display = showCard ? '' : 'none';
+        });
+    }
+
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('toggle-text')) {
+            e.preventDefault();
+            const container = e.target.closest('.request-details');
+            const shortText = container.querySelector('.short-text');
+            const fullText = container.querySelector('.full-text');
+            
+            if (fullText.classList.contains('d-none')) {
+                shortText.classList.add('d-none');
+                fullText.classList.remove('d-none');
+                e.target.textContent = 'Read Less';
+            } else {
+                shortText.classList.remove('d-none');
+                fullText.classList.add('d-none');
+                e.target.textContent = 'Read More';
+            }
+        }
+    });
+
+    function updateStatus(id, status) {
+        if (confirm(`Mark this prayer request as ${status}?`)) {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            
+            fetch('/PrayerRequest/UpdateStatus', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token
+                },
+                body: JSON.stringify({ id: id, status: status })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error updating status: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Network error occurred');
+            });
+        }
+    }
+</script>

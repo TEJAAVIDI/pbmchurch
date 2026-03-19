@@ -1,0 +1,313 @@
+@{
+    ViewData["Title"] = "Automation Settings";
+}
+
+<div class="page-header">
+    <h2><i class="fas fa-cog me-2"></i>Automation Settings</h2>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Birthday Automation</h5>
+                <form method="post" asp-action="UpdateBirthdaySettings">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="EnableBirthdayWishes" id="enableBirthday" value="true" @(ViewBag.EnableBirthdayWishes == true ? "checked" : "") />
+                            <label class="form-check-label" for="enableBirthday">
+                                Enable Automatic Birthday Wishes
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Birthday Wish Time</label>
+                        <input type="time" name="BirthdayWishTime" class="form-control" value="@(ViewBag.BirthdayWishTime ?? "09:00")" />
+                        <small class="text-muted">Time when birthday wishes should be sent (24-hour format)</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Birthday Wish Message Template</label>
+                        <textarea name="BirthdayMessage" class="form-control" rows="4" placeholder="Use {Name} for member name">@ViewBag.BirthdayMessage</textarea>
+                        <small class="text-muted">Use {Name} as placeholder for member's name</small>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-2"></i>Save Birthday Settings
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Anniversary Automation</h5>
+                <form method="post" asp-action="UpdateAnniversarySettings">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="EnableAnniversaryWishes" id="enableAnniversary" value="true" @(ViewBag.EnableAnniversaryWishes == true ? "checked" : "") />
+                            <label class="form-check-label" for="enableAnniversary">
+                                Enable Automatic Anniversary Wishes
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Anniversary Wish Time</label>
+                        <input type="time" name="AnniversaryWishTime" class="form-control" value="@(ViewBag.AnniversaryWishTime ?? "14:42")" />
+                        <small class="text-muted">Time when anniversary wishes should be sent (24-hour format)</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Anniversary Wish Message Template</label>
+                        <textarea name="AnniversaryMessage" class="form-control" rows="4" placeholder="Use {Name} for member name">@ViewBag.AnniversaryMessage</textarea>
+                        <small class="text-muted">Use {Name} as placeholder for member's name</small>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-2"></i>Save Anniversary Settings
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Attendance Reminders</h5>
+                <form method="post" asp-action="UpdateAttendanceSettings">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="EnableAttendanceReminders" id="enableReminders" value="true" @(ViewBag.EnableAttendanceReminders == true ? "checked" : "") />
+                            <label class="form-check-label" for="enableReminders">
+                                Enable Attendance Reminders
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Reminder Time</label>
+                        <input type="time" name="ReminderTime" class="form-control" value="@(ViewBag.ReminderTime ?? "18:00")" />
+                        <small class="text-muted">Time when reminders should be sent before meeting days</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Reminder Message Template</label>
+                        <textarea name="ReminderMessage" class="form-control" rows="4">@ViewBag.ReminderMessage</textarea>
+                        <small class="text-muted">Message sent to members before church meetings</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Send Reminder Before</label>
+                        <select name="ReminderDaysBefore" class="form-select">
+                            <option value="0" selected="@(ViewBag.ReminderDaysBefore == "0")">Same Day</option>
+                            <option value="1" selected="@(ViewBag.ReminderDaysBefore == "1")">1 Day Before</option>
+                            <option value="2" selected="@(ViewBag.ReminderDaysBefore == "2")">2 Days Before</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-info">
+                        <i class="fas fa-save me-2"></i>Save Reminder Settings
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Daily Verse Automation</h5>
+                <form method="post" asp-action="UpdateVerseSettings">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="EnableDailyVerse" id="enableVerse" value="true" @(ViewBag.EnableDailyVerse == true ? "checked" : "") />
+                            <label class="form-check-label" for="enableVerse">
+                                Enable Daily Verse Sharing
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Daily Verse Time</label>
+                        <input type="time" name="VerseShareTime" class="form-control" value="@(ViewBag.VerseShareTime ?? "07:00")" />
+                        <small class="text-muted">Time when daily verse should be shared (24-hour format)</small>
+                    </div>
+                    <button type="submit" class="btn btn-info">
+                        <i class="fas fa-save me-2"></i>Save Verse Settings
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card border-warning">
+            <div class="card-body">
+                <h5 class="card-title text-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Background Service Status
+                </h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Service Status:</strong> 
+                            <span class="badge bg-success">Running</span>
+                        </p>
+                        <p><strong>Last Run:</strong> @(ViewBag.LastRunTime ?? "Never")</p>
+                        <p><strong>Next Scheduled Run:</strong> @(ViewBag.NextRunTime ?? "Not scheduled")</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Messages Sent Today:</strong> @(ViewBag.MessagesSentToday ?? 0)</p>
+                        <p><strong>Failed Messages:</strong> @(ViewBag.FailedMessages ?? 0)</p>
+                    </div>
+                </div>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <button type="button" class="btn btn-warning w-100" onclick="testAutomation()">
+                            <i class="fas fa-flask me-2"></i>
+                            <span class="d-none d-md-inline">Test Birthday</span>
+                            <span class="d-md-none">Test</span>
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button type="button" class="btn btn-info w-100" onclick="testAnniversary()">
+                            <i class="fas fa-heart me-2"></i>
+                            <span class="d-none d-md-inline">Test Anniversary</span>
+                            <span class="d-md-none">Test</span>
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button type="button" class="btn btn-danger w-100" onclick="clearHistory()">
+                            <i class="fas fa-trash me-2"></i>
+                            <span class="d-none d-md-inline">Clear History</span>
+                            <span class="d-md-none">Clear</span>
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button type="button" class="btn btn-secondary w-100" onclick="checkService()">
+                            <i class="fas fa-cog me-2"></i>
+                            <span class="d-none d-md-inline">Check Service</span>
+                            <span class="d-md-none">Check</span>
+                        </button>
+                    </div>
+                    <div class="col-12">
+                        <button type="button" class="btn btn-primary w-100" onclick="forceRun()">
+                            <i class="fas fa-play me-2"></i>
+                            <span class="d-none d-md-inline">Force Run</span>
+                            <span class="d-md-none">Run</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function testAutomation() {
+            if (confirm('This will test the automation system. Continue?')) {
+                fetch('@Url.Action("TestAutomation", "Automation")', {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Test completed successfully!');
+                    } else {
+                        alert('Test failed: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+            }
+        }
+        
+        function testAnniversary() {
+            if (confirm('This will test the anniversary automation system. Continue?')) {
+                fetch('@Url.Action("TestAnniversaryAutomation", "Automation")', {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                    } else {
+                        alert('Test failed: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+            }
+        }
+        
+        function clearHistory() {
+            if (confirm('This will clear today\'s birthday history so you can test again. Continue?')) {
+                fetch('@Url.Action("ClearBirthdayHistory", "Automation")', {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                    } else {
+                        alert('Failed: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+            }
+        }
+        
+        function checkService() {
+            fetch('@Url.Action("CheckBackgroundService", "Automation")', {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);
+            });
+        }
+        
+        function forceRun() {
+            if (confirm('This will force run both birthday and anniversary automation right now. Continue?')) {
+                fetch('@Url.Action("ForceRunAutomation", "Automation")', {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+            }
+        }
+    </script>
+}

@@ -1,0 +1,221 @@
+@model PBMChurch.Models.Member
+@{
+    ViewData["Title"] = "Add Member & Family";
+}
+
+<div class="page-header">
+    <h2><i class="fas fa-user-plus me-2"></i>Add Member & Family</h2>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to List
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="Create" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <!-- Profile Image Section -->
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-bold">Profile Image</label>
+                            <div class="d-flex align-items-center gap-3">
+                                <div>
+                                    <div id="imagePreview" class="img-thumbnail d-flex align-items-center justify-content-center bg-secondary text-white fw-bold" style="width: 60px; height: 60px; font-size: 20px;">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <input type="file" name="profileImage" id="profileImage" class="form-control" accept="image/*" />
+                                    <small class="text-muted">Choose file to upload member photo</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Basic Information -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ChurchId" class="form-label fw-bold">Church</label>
+                            <select asp-for="ChurchId" asp-items="ViewBag.Churches" class="form-select" id="churchSelect">
+                                <option value="">Select Church</option>
+                            </select>
+                            <span asp-validation-for="ChurchId" class="text-danger small"></span>
+                        </div>
+
+                        @* <div class="col-md-6 mb-3">
+                            <label asp-for="UserId" class="form-label fw-bold"></label>
+                            <input asp-for="UserId" class="form-control" readonly style="background-color: #e9ecef;" placeholder="Select church first" />
+                            <span asp-validation-for="UserId" class="text-danger small"></span>
+                        </div> *@
+                        <!-- Hidden User ID field for backend processing -->
+                        <input type="hidden" asp-for="UserId" />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Name" class="form-label fw-bold"></label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Phone" class="form-label fw-bold"></label>
+                            <input asp-for="Phone" class="form-control" />
+                            <span asp-validation-for="Phone" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Family" class="form-label fw-bold"></label>
+                            <input asp-for="Family" class="form-control" />
+                            <span asp-validation-for="Family" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Gender" class="form-label fw-bold"></label>
+                            <select asp-for="Gender" asp-items="ViewBag.GenderOptions" class="form-select">
+                                <option value="">Select Gender</option>
+                            </select>
+                            <span asp-validation-for="Gender" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="DateOfBirth" class="form-label fw-bold"></label>
+                            <input asp-for="DateOfBirth" type="date" class="form-control" />
+                            <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="AnniversaryDate" class="form-label fw-bold"></label>
+                            <input asp-for="AnniversaryDate" type="date" class="form-control" />
+                            <span asp-validation-for="AnniversaryDate" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Email" class="form-label fw-bold"></label>
+                            <input asp-for="Email" type="email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                    </div>
+                    <!-- Family Members Section -->
+                    <hr class="my-4" />
+                    <h4 class="mb-3"><i class="fas fa-users me-2"></i>Family Members</h4>
+                    <div id="familyContainer">
+                        <!-- Family member forms will be added by JS -->
+                    </div>
+                    <button type="button" class="btn btn-info mb-3" onclick="addFamilyRow()">
+                        <i class="fas fa-plus me-1"></i>Add Family Member
+                    </button>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save me-1"></i>Save Member & Family
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Auto-generate User ID when church is selected
+        $('#churchSelect').on('change', function() {
+            var churchId = $(this).val();
+            if (churchId) {
+                $.ajax({
+                    url: '@Url.Action("GenerateUserId", "Member")',
+                    type: 'GET',
+                    data: { churchId: churchId },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#UserId').val(response.userId);
+                        }
+                    }
+                });
+            } else {
+                $('#UserId').val('');
+            }
+        });
+
+        // Image preview
+        document.getElementById('profileImage').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.innerHTML = '<img src="' + e.target.result + '" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;" />';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function addFamilyRow() {
+            var container = document.getElementById('familyContainer');
+            var familyIndex = container.children.length;
+            var familyDiv = document.createElement('div');
+            familyDiv.className = 'card mb-3';
+            familyDiv.innerHTML = `
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Name</label>
+                            <input name="FamilyMembers[${familyIndex}].Name" class="form-control" required />
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Relation</label>
+                            <input name="FamilyMembers[${familyIndex}].Relation" class="form-control" required />
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Gender</label>
+                            <select name="FamilyMembers[${familyIndex}].Gender" class="form-select" required>
+                                <option value="">Select</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Date of Birth</label>
+                            <input name="FamilyMembers[${familyIndex}].DateOfBirth" class="form-control" type="date" required />
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Anniversary</label>
+                            <input name="FamilyMembers[${familyIndex}].AnniversaryDate" class="form-control" type="date" />
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Phone</label>
+                            <input name="FamilyMembers[${familyIndex}].Phone" class="form-control" required />
+                        </div>
+                        <div class="col-md-6 col-12 mb-3">
+                            <label class="form-label fw-bold">Email</label>
+                            <input name="FamilyMembers[${familyIndex}].Email" class="form-control" type="email" />
+                        </div>
+                        <div class="col-12 text-center">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.card').remove()">
+                                <i class="fas fa-trash me-1"></i>Delete Family Member
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(familyDiv);
+        }
+    </script>
+}
+<!-- Removed duplicate and malformed form elements -->
+<!-- Removed extra closing form and duplicate Scripts section -->

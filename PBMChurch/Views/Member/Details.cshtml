@@ -1,0 +1,1127 @@
+
+@model PBMChurch.Models.Member
+@{
+    ViewData["Title"] = $"{Model.Name} - Member Details";
+}
+
+<style>
+    .member-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem 0;
+        margin-bottom: 1.5rem;
+        border-radius: 15px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .member-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="%23ffffff" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>') repeat;
+        opacity: 0.3;
+    }
+    
+    .header-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .header-main-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .header-subtitle {
+        font-size: 0.95rem;
+        opacity: 0.9;
+        margin-bottom: 1.5rem;
+    }
+    
+    .header-actions {
+        gap: 0.75rem;
+    }
+    
+    .header-actions .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(255,255,255,0.3);
+        backdrop-filter: blur(10px);
+    }
+    
+    .header-actions .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        border-color: rgba(255,255,255,0.6);
+    }
+    
+    @@media (max-width: 768px) {
+        .member-header {
+            padding: 1.5rem 0;
+            margin-bottom: 1.5rem;
+        }
+        
+        .header-main-title {
+            font-size: 1.25rem;
+        }
+        
+        .header-subtitle {
+            font-size: 0.85rem;
+        }
+        
+        .header-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .header-actions .btn {
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .card {
+            margin-bottom: 1rem;
+        }
+        
+        .member-avatar, .avatar-placeholder {
+            width: 120px;
+            height: 120px;
+            font-size: 2.5rem;
+        }
+        
+        .sticky-member-sidebar {
+            position: relative;
+        }
+    }
+    
+    .card {
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        border: none;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    
+    .member-avatar, .avatar-placeholder {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 3px solid #fff;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .avatar-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        font-weight: 700;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+    
+    .nav-underline .nav-link {
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        margin-right: 0.5rem;
+    }
+    
+    .nav-underline .nav-link:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .nav-underline .nav-link.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-bottom: none;
+    }
+    
+    .whatsapp-btn {
+        position: absolute;
+        bottom: 1rem;
+        right: 1rem;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
+        transition: all 0.3s ease;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .whatsapp-btn:hover {
+        transform: scale(1.1) rotate(10deg);
+        box-shadow: 0 12px 35px rgba(37, 211, 102, 0.6);
+        color: white;
+    }
+    
+    @@media (max-width: 768px) {
+        .whatsapp-btn {
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+            bottom: 0.5rem;
+            right: 0.5rem;
+        }
+        
+        .card-actions {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            z-index: 20;
+        }
+        
+        .nav-link .nav-text {
+            display: none;
+        }
+    }
+</style>
+
+<div class="content">
+    <!-- Enhanced Header with Gradient Background -->
+    <div class="member-header">
+        <div class="container-fluid">
+            <div class="header-content">
+                <div class="row align-items-center">
+                    <div class="col-12 col-md-8">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h1 class="header-main-title">@Model.Name</h1>
+                                <p class="header-subtitle mb-0">
+                                    <i class="fas fa-id-card me-2"></i>Member ID: @Model.UserId
+                                    <span class="mx-3">|</span>
+                                    <i class="fas fa-church me-2"></i>@Model.Church?.ChurchName
+                                </p>
+                            </div>
+                            <!-- Mobile Back Button -->
+                            <div class="d-md-none">
+                                <a href="/Member/Index" class="btn btn-outline-light btn-sm">
+                                    <i class="fas fa-arrow-left"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <!-- Desktop Actions -->
+                        <div class="d-none d-md-flex header-actions justify-content-md-end mt-3 mt-md-0">
+                            <a href="/Member/Edit/@Model.MemberId" class="btn btn-light">
+                                <i class="fas fa-edit me-2"></i>Edit
+                            </a>
+                            <a href="/Member/Index" class="btn btn-outline-light">
+                                <i class="fas fa-arrow-left me-2"></i>Back
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!-- Main Content Grid -->
+        <div class="row g-3 g-md-4">
+            <!-- Left Sidebar - Member Info Cards -->
+            <div class="col-12 col-md-5 col-lg-4">
+                <div class="sticky-member-sidebar">
+                    <!-- Member Profile Card -->
+                    <div class="card mb-3 position-relative">
+                        <!-- Mobile Card Actions -->
+                        <div class="d-md-none card-actions">
+                            <div class="dropdown">
+                                <button class="btn btn-light btn-sm" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="/Member/Edit/@Model.MemberId"><i class="fas fa-edit me-2"></i>Edit</a></li>
+                                    <li><a class="dropdown-item" href="/Member/Index"><i class="fas fa-arrow-left me-2"></i>Back</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    @if (!string.IsNullOrEmpty(Model.ProfileImage))
+                                    {
+                                        <img src="@Model.ProfileImage" alt="@Model.Name" class="member-avatar" />
+                                    }
+                                    else
+                                    {
+                                        var initials = string.Join("", Model.Name.Split(' ').Take(2).Select(w => w.FirstOrDefault())).ToUpper();
+                                        var colors = new[] { "bg-primary", "bg-success", "bg-danger", "bg-warning", "bg-info" };
+                                        var colorIndex = Math.Abs(Model.Name.GetHashCode()) % colors.Length;
+                                        
+                                        <div class="avatar-placeholder @colors[colorIndex] text-white">
+                                            @initials
+                                        </div>
+                                    }
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h5 class="mb-1">@Model.Name</h5>
+                                    <p class="text-muted mb-2">ID: @Model.UserId</p>
+                                    <div>
+                                        <span class="badge @(Model.Status == "Active" ? "bg-success" : "bg-secondary") me-2">
+                                            @Model.Status
+                                        </span>
+                                        @if (!string.IsNullOrEmpty(Model.Gender))
+                                        {
+                                            <span class="badge @(Model.Gender == "Male" ? "bg-primary" : "bg-danger")">
+                                                @Model.Gender
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            @if (!string.IsNullOrEmpty(Model.Phone))
+                            {
+                                <a href="https://wa.me/@Model.Phone.Replace("+", "").Replace(" ", "").Replace("-", "")" 
+                                   target="_blank" 
+                                   class="whatsapp-btn" 
+                                   title="Send WhatsApp Message">
+                                    <i class="fab fa-whatsapp"></i>
+                                </a>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Contact Information Card -->
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="mb-4">Contact Information</h5>
+
+                            @if (!string.IsNullOrEmpty(Model.Phone))
+                            {
+                                <div class="row mb-3">
+                                    <div class="col-4"><strong>Phone:</strong></div>
+                                    <div class="col-8"><a href="tel:@Model.Phone" class="text-primary">@Model.Phone</a></div>
+                                </div>
+                            }
+
+                            <div class="row mb-3">
+                                <div class="col-4"><strong>Church:</strong></div>
+                                <div class="col-8">@Model.Church?.ChurchName</div>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(Model.Family))
+                            {
+                                <div class="row mb-3">
+                                    <div class="col-4"><strong>Family:</strong></div>
+                                    <div class="col-8">@Model.Family</div>
+                                </div>
+                            }
+
+                            @if (Model.DateOfBirth.HasValue)
+                            {
+                                <div class="row mb-3">
+                                    <div class="col-4"><strong>Date of Birth:</strong></div>
+                                    <div class="col-8">
+                                        @Model.DateOfBirth.Value.ToString("dd-MM-yyyy")
+                                        <span class="badge bg-info ms-2">@((DateTime.Now.Year - Model.DateOfBirth.Value.Year)) years old</span>
+                                    </div>
+                                </div>
+                            }
+
+                            @if (Model.AnniversaryDate.HasValue)
+                            {
+                                <div class="row mb-3">
+                                    <div class="col-4"><strong>Anniversary:</strong></div>
+                                    <div class="col-8">@Model.AnniversaryDate.Value.ToString("dd-MM-yyyy")</div>
+                                </div>
+                            }
+
+                            <div class="row mb-3">
+                                <div class="col-4"><strong>Joined Date:</strong></div>
+                                <div class="col-8">@Model.JoinedDate.ToString("dd-MM-yyyy")</div>
+                            </div>
+
+                            <div class="row mb-0">
+                                <div class="col-4"><strong>Member Since:</strong></div>
+                                <div class="col-8">@Model.CreatedDate.ToString("dd-MM-yyyy")</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <!-- Right Content Area - Activity Tabs -->
+            <div class="col-12 col-md-7 col-lg-8">
+                <div class="member-details-container">
+                    <!-- Tab Navigation -->
+                    <nav class="navbar pb-4 px-0 sticky-top" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px;">
+                        <ul class="nav nav-underline fs-9 flex-nowrap scrollbar justify-content-center w-100">
+                            <li class="nav-item">
+                                <a class="nav-link me-2 text-white" href="#attendance" onclick="loadAttendance(@Model.MemberId, event)">
+                                    <i class="fas fa-calendar-check me-1"></i><span class="nav-text">Attendance</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link me-2 text-white" href="#prayers" onclick="loadPrayerRequests(@Model.MemberId, event)">
+                                    <i class="fas fa-hands-praying me-1"></i><span class="nav-text">Prayers</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link me-2 text-white" href="#offerings" onclick="loadOfferings(@Model.MemberId, event)">
+                                    <i class="fas fa-hand-holding-heart me-1"></i><span class="nav-text">Offering</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link me-2 text-white" href="#history" onclick="loadHistory(@Model.MemberId, event)">
+                                    <i class="fas fa-clock-rotate-left me-1"></i><span class="nav-text">History</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-white" href="#family" onclick="loadFamilyInfo(@Model.MemberId, event)">
+                                    <i class="fas fa-users me-1"></i><span class="nav-text">Family</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+
+                    <!-- Dynamic Content Area -->
+                    <div id="detailSubContent" class="min-vh-50">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="mb-3">Notes</h5>
+                                <textarea id="noteText" class="form-control mb-3" rows="4" placeholder="Add a note about this member..."></textarea>
+                                <button class="btn btn-primary" onclick="saveNote(@Model.MemberId)">
+                                    <i class="fas fa-save me-2"></i>Save Note
+                                </button>
+                                <hr class="my-4" />
+                                <div id="notesList">
+                                    <p class="text-muted">No notes yet. Add your first note above.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Tab switching function
+        function setActiveTab(element) {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            if (element) {
+                element.classList.add('active');
+            }
+        }
+        // Load Family Info
+        function loadFamilyInfo(memberId, event) {
+            setActiveTab(event?.target);
+            showLoading();
+            $.ajax({
+                url: '/Member/GetFamilyInfo',
+                type: 'GET',
+                data: { memberId: memberId },
+                success: function(data) {
+                    let familyHtml = '';
+                    if (data && data.length > 0) {
+                        // Mobile card layout
+                        let mobileCards = '';
+                        data.forEach(function(fm) {
+                            const nameLink = fm.relatedMemberId ? `<a href="/Member/Details/${fm.relatedMemberId}" class="text-decoration-none">${fm.name}</a>` : fm.name;
+                            mobileCards += `
+                                <div class="card mb-3 d-md-none">
+                                    <div class="card-body">
+                                        <h6 class="card-title">${nameLink}</h6>
+                                        <p class="mb-1"><strong>Relation:</strong> ${fm.relation}</p>
+                                        ${fm.dateOfBirth ? `<p class="mb-1"><strong>DOB:</strong> ${formatDate(fm.dateOfBirth)}</p>` : ''}
+                                        ${fm.phone ? `<p class="mb-1"><strong>Phone:</strong> ${fm.phone}</p>` : ''}
+                                        ${fm.email ? `<p class="mb-0"><strong>Email:</strong> ${fm.email}</p>` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        
+                        // Desktop table layout
+                        let desktopTable = `
+                            <div class="table-responsive d-none d-md-block">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Relation</th>
+                                            <th>Date of Birth</th>
+                                            <th>Phone</th>
+                                            <th>Email</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
+                        data.forEach(function(fm) {
+                            const nameLink = fm.relatedMemberId ? `<a href="/Member/Details/${fm.relatedMemberId}" class="text-decoration-none">${fm.name}</a>` : fm.name;
+                            desktopTable += `<tr>
+                                <td>${nameLink}</td>
+                                <td>${fm.relation}</td>
+                                <td>${fm.dateOfBirth ? formatDate(fm.dateOfBirth) : ''}</td>
+                                <td>${fm.phone || ''}</td>
+                                <td>${fm.email || ''}</td>
+                            </tr>`;
+                        });
+                        desktopTable += '</tbody></table></div>';
+                        
+                        familyHtml = mobileCards + desktopTable;
+                    } else {
+                        familyHtml = '<p class="text-muted">No family members added.</p>';
+                    }
+                    $("#detailSubContent").html(`
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="mb-4">Family Info</h5>
+                                ${familyHtml}
+                            </div>
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        // Loading indicator
+        function showLoading() {
+            $("#detailSubContent").html(`
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Loading content...</p>
+                </div>
+            `);
+        }
+
+        // Load Notes
+        function loadNotes(memberId, event) {
+            setActiveTab(event?.target);
+            showLoading();
+            $.ajax({
+                url: '/Member/GetNotes',
+                type: 'GET',
+                data: { memberId: memberId },
+                success: function(data) {
+                    let notesHtml = '';
+                    if (data && data.length > 0) {
+                        data.forEach(function(note) {
+                            notesHtml += `
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="mb-0">${note.createdBy || 'Admin'}</h6>
+                                            <small class="text-muted">${formatDate(note.createdDate)} ${new Date(note.createdDate).toLocaleTimeString()}</small>
+                                        </div>
+                                        <p class="mb-0">${note.noteText}</p>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        notesHtml = '<p class="text-muted">No notes yet. Add your first note above.</p>';
+                    }
+                    
+                    $("#detailSubContent").html(`
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="mb-3">Notes</h5>
+                                <textarea id="noteText" class="form-control mb-3" rows="4" placeholder="Add a note about this member..."></textarea>
+                                <button class="btn btn-primary" onclick="saveNote(${memberId})">
+                                    <i class="fas fa-save me-2"></i>Save Note
+                                </button>
+                                <hr class="my-4" />
+                                <div id="notesList">
+                                    ${notesHtml}
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        // Load Attendance History
+        function loadAttendance(memberId, event) {
+            setActiveTab(event?.target);
+            showLoading();
+            $.ajax({
+                url: '/Member/GetAttendance',
+                type: 'GET',
+                data: { memberId: memberId },
+                success: function(data) {
+                    let attendanceHtml = '';
+                    
+                    if (data && data.length > 0) {
+                        // Mobile card layout
+                        let mobileCards = '';
+                        data.forEach(function(att) {
+                            const statusBadge = att.isPresent ? 
+                                '<span class="badge bg-success">Present</span>' : 
+                                '<span class="badge bg-danger">Absent</span>';
+                            mobileCards += `
+                                <div class="card mb-3 d-md-none">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="card-title">${formatDate(att.attendanceDate)}</h6>
+                                            ${statusBadge}
+                                        </div>
+                                        <p class="mb-1"><strong>Church:</strong> ${att.churchName || 'N/A'}</p>
+                                        <p class="mb-0"><strong>Marked On:</strong> ${formatDate(att.markedDate)} ${new Date(att.markedDate).toLocaleTimeString()}</p>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        
+                        // Desktop table layout
+                        let desktopTable = `
+                            <div class="table-responsive d-none d-md-block">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Church</th>
+                                            <th>Status</th>
+                                            <th>Marked On</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
+                        data.forEach(function(att) {
+                            const statusBadge = att.isPresent ? 
+                                '<span class="badge bg-success">Present</span>' : 
+                                '<span class="badge bg-danger">Absent</span>';
+                            desktopTable += `
+                                <tr>
+                                    <td>${formatDate(att.attendanceDate)}</td>
+                                    <td>${att.churchName || 'N/A'}</td>
+                                    <td>${statusBadge}</td>
+                                    <td>${formatDate(att.markedDate)} ${new Date(att.markedDate).toLocaleTimeString()}</td>
+                                </tr>
+                            `;
+                        });
+                        desktopTable += '</tbody></table></div>';
+                        
+                        attendanceHtml = mobileCards + desktopTable;
+                    } else {
+                        attendanceHtml = '<p class="text-center text-muted py-4">No attendance records found</p>';
+                    }
+                    
+                    $("#detailSubContent").html(`
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="mb-4">Attendance History</h5>
+                                ${attendanceHtml}
+                            </div>
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        // Load Prayer Requests
+        function loadPrayerRequests(memberId, event) {
+            setActiveTab(event?.target);
+            showLoading();
+            $.ajax({
+                url: '/Member/GetPrayerRequests',
+                type: 'GET',
+                data: { memberId: memberId },
+                success: function(data) {
+                    let prayersHtml = '';
+                    if (data && data.length > 0) {
+                        data.forEach(function(prayer) {
+                            const statusClass = prayer.status === 'Answered' ? 'success' : 
+                                              prayer.status === 'In Progress' ? 'warning' : 
+                                              prayer.status === 'Closed' ? 'secondary' : 'info';
+                            
+                            let statusButtons = '';
+                            if (prayer.status === 'Closed') {
+                                statusButtons = `
+                                    <button class="btn btn-sm btn-success" onclick="updatePrayerStatus(${prayer.requestId}, 'Active')" title="Re-open">
+                                        <i class="fas fa-redo me-1"></i>Re-open
+                                    </button>
+                                `;
+                            } else {
+                                statusButtons = `
+                                    <button class="btn btn-sm btn-secondary" onclick="updatePrayerStatus(${prayer.requestId}, 'Closed')" title="Close">
+                                        <i class="fas fa-times me-1"></i>Close
+                                    </button>
+                                `;
+                                if (prayer.status !== 'Answered') {
+                                    statusButtons += `
+                                        <button class="btn btn-sm btn-success ms-1" onclick="updatePrayerStatus(${prayer.requestId}, 'Answered')" title="Mark Answered">
+                                            <i class="fas fa-check me-1"></i>Answered
+                                        </button>
+                                    `;
+                                }
+                            }
+                            
+                            prayersHtml += `
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="mb-0">${prayer.title || 'Prayer Request'}</h6>
+                                            <span class="badge bg-${statusClass}">${prayer.status || 'Pending'}</span>
+                                        </div>
+                                        <p class="mb-2">${prayer.request}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                <i class="fas fa-calendar me-1"></i>${formatDate(prayer.requestDate)}
+                                            </small>
+                                            <div>
+                                                ${statusButtons}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        prayersHtml = `
+                            <div class="text-center py-5">
+                                <i class="fas fa-hands-praying fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No prayer requests yet</p>
+                            </div>
+                        `;
+                    }
+                    
+                    $("#detailSubContent").html(`
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 class="mb-0">Prayer Requests</h5>
+                                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#prayerModal">
+                                        <i class="fas fa-plus me-2"></i>Add Request
+                                    </button>
+                                </div>
+                                <div id="prayerList">
+                                    ${prayersHtml}
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        // Update Prayer Request Status
+        function updatePrayerStatus(requestId, status) {
+            $.ajax({
+                url: '/Member/UpdatePrayerStatus',
+                type: 'POST',
+                data: {
+                    requestId: requestId,
+                    status: status,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Prayer request status updated successfully!');
+                        loadPrayerRequests(@Model.MemberId, null);
+                    } else {
+                        alert('Failed to update status: ' + (response.message || 'Unknown error'));
+                    }
+                },
+                error: function() {
+                    alert('Failed to update prayer request status');
+                }
+            });
+        }
+
+        // Load Offerings
+        function loadOfferings(memberId, event) {
+            setActiveTab(event?.target);
+            showLoading();
+            $.ajax({
+                url: '/Member/GetOfferings',
+                type: 'GET',
+                data: { memberId: memberId },
+                success: function(data) {
+                    let totalAmount = 0;
+                    let offeringsHtml = '';
+                    
+                    if (data && data.length > 0) {
+                        // Mobile card layout
+                        let mobileCards = '';
+                        data.forEach(function(offering) {
+                            totalAmount += offering.amount || 0;
+                            mobileCards += `
+                                <div class="card mb-3 d-md-none">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="card-title">${offering.category || 'General'}</h6>
+                                            <strong class="text-success">₹ ${offering.amount.toLocaleString()}</strong>
+                                        </div>
+                                        <p class="mb-1"><strong>Date:</strong> ${formatDate(offering.date)}</p>
+                                        ${offering.purpose ? `<p class="mb-0"><strong>Purpose:</strong> ${offering.purpose}</p>` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        
+                        // Desktop table layout
+                        let desktopTable = `
+                            <div class="table-responsive d-none d-md-block">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Category</th>
+                                            <th>Amount</th>
+                                            <th>Purpose</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
+                        data.forEach(function(offering) {
+                            desktopTable += `
+                                <tr>
+                                    <td>${formatDate(offering.date)}</td>
+                                    <td>${offering.category || 'General'}</td>
+                                    <td><strong>₹ ${offering.amount.toLocaleString()}</strong></td>
+                                    <td>${offering.purpose || '-'}</td>
+                                </tr>
+                            `;
+                        });
+                        desktopTable += '</tbody></table></div>';
+                        
+                        offeringsHtml = mobileCards + desktopTable;
+                    } else {
+                        offeringsHtml = '<p class="text-center text-muted py-4">No offerings recorded</p>';
+                    }
+                    
+                    $("#detailSubContent").html(`
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 class="mb-0">Special Offerings</h5>
+                                    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#offeringModal">
+                                        <i class="fas fa-plus me-2"></i>Offering
+                                    </button>
+                                </div>
+                                <div class="alert alert-info">
+                                    <strong>Total Offerings:</strong> ₹ ${totalAmount.toLocaleString()}
+                                </div>
+                                ${offeringsHtml}
+                            </div>
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        // Load History
+        function loadHistory(memberId, event) {
+            setActiveTab(event?.target);
+            showLoading();
+            $.ajax({
+                url: '/Member/GetHistory',
+                type: 'GET',
+                data: { memberId: memberId },
+                success: function(data) {
+                    let historyHtml = '';
+                    if (data && data.length > 0) {
+                        data.forEach(function(item) {
+                            const iconClass = item.type === 'Note' ? 'fa-note-sticky' :
+                                            item.type === 'Attendance' ? 'fa-calendar-check' :
+                                            item.type === 'Prayer' ? 'fa-hands-praying' :
+                                            item.type === 'Offering' ? 'fa-hand-holding-heart' : 'fa-circle';
+                            historyHtml += `
+                                <div class="timeline-item mb-4">
+                                    <div class="d-flex">
+                                        <div class="timeline-marker bg-primary">
+                                            <i class="fas ${iconClass}"></i>
+                                        </div>
+                                        <div class="timeline-content ms-3">
+                                            <p class="mb-1 fw-bold">${item.action}</p>
+                                            <p class="mb-0 text-muted small">${formatDate(item.date)} ${new Date(item.date).toLocaleTimeString()}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        historyHtml = `
+                            <div class="timeline-item mb-4">
+                                <div class="d-flex">
+                                    <div class="timeline-marker bg-primary">
+                                        <i class="fas fa-user-plus"></i>
+                                    </div>
+                                    <div class="timeline-content ms-3">
+                                        <p class="mb-1 fw-bold">Member Created</p>
+                                        <p class="mb-0 text-muted small">@Model.CreatedDate.ToString("dd-MM-yyyy hh:mm tt")</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    $("#detailSubContent").html(`
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="mb-4">Activity History</h5>
+                                <div class="timeline">
+                                    ${historyHtml}
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        // Helper functions
+        function openNoteModal() {
+            document.querySelector('.nav-link').click();
+            setTimeout(() => {
+                document.getElementById('noteText')?.focus();
+            }, 300);
+        }
+
+        function saveNote(memberId) {
+            const noteText = document.getElementById('noteText').value;
+            if (!noteText.trim()) {
+                alert('Please enter a note');
+                return;
+            }
+            
+            $.ajax({
+                url: '/Member/SaveNote',
+                type: 'POST',
+                data: {
+                    memberId: memberId,
+                    noteText: noteText,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Note saved successfully!');
+                        loadNotes(memberId, null);
+                    } else {
+                        alert('Failed to save note: ' + (response.message || 'Unknown error'));
+                    }
+                },
+                error: function() {
+                    alert('Failed to save note');
+                }
+            });
+        }
+
+        function savePrayerRequest() {
+            const memberId = @Model.MemberId;
+            const title = $('#prayerTitle').val();
+            const request = $('#prayerRequest').val();
+            
+            if (!request.trim()) {
+                alert('Please enter a prayer request');
+                return;
+            }
+            
+            $.ajax({
+                url: '/Member/SavePrayerRequest',
+                type: 'POST',
+                data: {
+                    memberId: memberId,
+                    title: title,
+                    request: request,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('#prayerModal').modal('hide');
+                        alert('Prayer request saved successfully!');
+                        loadPrayerRequests(memberId, null);
+                    } else {
+                        alert('Failed to save prayer request: ' + (response.message || 'Unknown error'));
+                    }
+                },
+                error: function() {
+                    alert('Failed to save prayer request');
+                }
+            });
+        }
+
+        function saveOffering() {
+            const memberId = @Model.MemberId;
+            const date = $('#offeringDate').val();
+            const category = $('#offeringCategory').val();
+            const amount = $('#offeringAmount').val();
+            const purpose = $('#offeringPurpose').val();
+            
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+            
+            $.ajax({
+                url: '/Member/SaveOffering',
+                type: 'POST',
+                data: {
+                    memberId: memberId,
+                    date: date,
+                    category: category,
+                    amount: amount,
+                    purpose: purpose,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('#offeringModal').modal('hide');
+                        alert('Offering recorded successfully!');
+                        loadOfferings(memberId, null);
+                    } else {
+                        alert('Failed to record offering: ' + (response.message || 'Unknown error'));
+                    }
+                },
+                error: function() {
+                    alert('Failed to record offering');
+                }
+            });
+        }
+
+        function markAttendance(memberId) {
+            // Redirect to attendance page
+            window.location.href = '/Attendance/Index';
+        }
+
+        function openWhatsApp(name, phone) {
+            const message = encodeURIComponent(`Hello ${name}`);
+            const cleanPhone = phone.replace(/[^0-9]/g, '');
+            window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
+        }
+
+        function sendSMS(phone) {
+            window.location.href = `sms:${phone}`;
+        }
+
+        function editMember(memberId) {
+            window.location.href = '/Member/Edit/' + memberId;
+        }
+
+        function callMember(phone) {
+            window.location.href = 'tel:' + phone;
+        }
+
+        function deactivateMember(memberId) {
+            if (confirm('Are you sure you want to deactivate this member?')) {
+                $.ajax({
+                    url: '/Member/Delete',
+                    type: 'POST',
+                    data: {
+                        id: memberId,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        alert('Member deactivated successfully');
+                        window.location.href = '/Member/Index';
+                    },
+                    error: function() {
+                        alert('Failed to deactivate member');
+                    }
+                });
+            }
+        }
+
+        // Initialize - Load notes by default
+        $(document).ready(function() {
+            loadNotes(@Model.MemberId, null);
+        });
+    </script>
+}
+
+<!-- Prayer Request Modal -->
+<div class="modal fade" id="prayerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Prayer Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="prayerTitle" class="form-label">Title (Optional)</label>
+                    <input type="text" class="form-control" id="prayerTitle" placeholder="Brief title">
+                </div>
+                <div class="mb-3">
+                    <label for="prayerRequest" class="form-label">Prayer Request</label>
+                    <textarea class="form-control" id="prayerRequest" rows="4" placeholder="Enter prayer request details..." required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="savePrayerRequest()">
+                    <i class="fas fa-save me-2"></i>Save Prayer Request
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Offering Modal -->
+<div class="modal fade" id="offeringModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Record Offering</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="offeringDate" class="form-label">Date</label>
+                    <input type="date" class="form-control" id="offeringDate" value="@DateTime.Today.ToString("yyyy-MM-dd")" required>
+                </div>
+                <div class="mb-3">
+                    <label for="offeringCategory" class="form-label">Category</label>
+                    <select class="form-select" id="offeringCategory" required>
+                        <option value="Tithe">Tithe</option>
+                        <option value="General Offering">General Offering</option>
+                        <option value="Special Offering">Special Offering</option>
+                        <option value="Building Fund">Building Fund</option>
+                        <option value="Missions">Missions</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="offeringAmount" class="form-label">Amount (₹)</label>
+                    <input type="number" class="form-control" id="offeringAmount" step="0.01" placeholder="0.00" required>
+                </div>
+                <div class="mb-3">
+                    <label for="offeringPurpose" class="form-label">Purpose (Optional)</label>
+                    <input type="text" class="form-control" id="offeringPurpose" placeholder="Purpose or notes">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="saveOffering()">
+                    <i class="fas fa-save me-2"></i>Record Offering
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()

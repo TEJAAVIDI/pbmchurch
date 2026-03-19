@@ -1,0 +1,756 @@
+@model IEnumerable<PBMChurch.Models.Member>
+
+@{
+    ViewData["Title"] = "Member Management";
+    var userRole = Context.Session.GetString("UserRole") ?? "Admin";
+    var allMembers = System.Text.Json.JsonSerializer.Serialize(Model.Select(m => new {
+        memberId = m.MemberId,
+        userId = m.UserId,
+        name = m.Name,
+        phone = m.Phone,
+        gender = m.Gender,
+        dateOfBirth = m.DateOfBirth?.ToString("MMM dd, yyyy"),
+        profileImage = m.ProfileImage,
+        churchName = m.Church?.ChurchName,
+        churchId = m.ChurchId,
+        familyCount = m.FamilyMembers != null ? m.FamilyMembers.GroupBy(fm => fm.RelatedMemberId).Count() : 0
+    }));
+}
+
+<div class="content-wrapper">
+    <div class="modern-page-header">
+        <div class="flex flex-between flex-wrap gap-md">
+            <h1 class="modern-page-title">
+                <i class="fas fa-users"></i> Member Management
+            </h1>
+            <div class="d-flex gap-3">
+                <a href="/Member/ExportToExcel" class="modern-btn modern-btn-info">
+                    <i class="fas fa-file-excel"></i>
+                    <span class="btn-text">Export</span>
+                </a>
+                <a href="/Attendance/Index" class="modern-btn modern-btn-success">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span class="btn-text">Attendance</span>
+                </a>
+                <a asp-action="Create" class="modern-btn modern-btn-primary">
+                    <i class="fas fa-plus"></i>
+                    <span class="btn-text">Member</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="modern-card-body">
+        <div class="modern-grid modern-grid-4 mb-lg">
+            <div class="modern-form-group">
+                <label class="modern-form-label">Filter by Church</label>
+                <select id="churchFilter" class="modern-form-control">
+                    <option value="">All Churches</option>
+                    @if (ViewBag.Churches != null)
+                    {
+                        @foreach (var church in ViewBag.Churches)
+                        {
+                            <option value="@church.Value">@church.Text</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="modern-form-group">
+                <label class="modern-form-label">Search</label>
+                <div class="d-flex gap-2">
+                    <input type="text" id="searchInput" class="modern-form-control" placeholder="Search members..." />
+                    <button type="button" id="searchBtn" class="modern-btn modern-btn-primary d-md-none" style="white-space: nowrap;">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button type="button" id="resetBtn" class="modern-btn modern-btn-warning d-md-none" style="white-space: nowrap;">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modern-form-group d-none d-md-block">
+                <label class="modern-form-label">&nbsp;</label>
+                <button type="button" id="searchBtn2" class="modern-btn modern-btn-primary" style="width: 100%;" onclick="document.getElementById('searchBtn').click();">
+                    <i class="fas fa-search"></i>
+                    <span class="btn-text">Search</span>
+                </button>
+            </div>
+            <div class="modern-form-group d-none d-md-block">
+                <label class="modern-form-label">&nbsp;</label>
+                <button type="button" id="resetBtn2" class="modern-btn modern-btn-warning" style="width: 100%;" onclick="document.getElementById('resetBtn').click();">
+                    <i class="fas fa-redo"></i>
+                    <span class="btn-text">Reset</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="recordCount" class="modern-alert modern-alert-info" style="display: none;">
+            <i class="fas fa-info-circle"></i>
+            <span><strong id="countText">0</strong> member(s) found</span>
+        </div>
+
+        <!-- Mobile Sort Button -->
+        <div class="d-md-none mb-3">
+            <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="sortByUserId()">
+                <i class="fas fa-sort"></i> Sort by User ID 
+                <i id="sortIconMobile" class="fas fa-sort"></i>
+            </button>
+        </div>
+
+            <div class="modern-table-container d-none d-md-block">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">Image</th>
+                            <th style="width: 100px; cursor: pointer;" onclick="sortByUserId()">
+                                User ID 
+                                <i id="sortIcon" class="fas fa-sort"></i>
+                            </th>
+                            <th>Name</th>
+                            <th class="hide-mobile">Church</th>
+                            <th>Phone</th>
+                            <th class="hide-mobile">Gender</th>
+                            <th class="hide-mobile">DOB</th>
+                            <th class="hide-mobile">Family Members</th>
+                            <th style="width: 100px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="memberTableBody">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile Card View -->
+            <div class="d-md-none" id="memberCardsContainer">
+                <!-- Populated by JavaScript -->
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Page navigation" class="mt-4" id="paginationNav" style="display: none;">
+                <ul class="pagination justify-content-center" id="paginationList">
+                    <!-- Populated by JavaScript -->
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+<script>
+    // All members data from server
+    var allMembers = @Html.Raw(allMembers);
+    const userRole = '@userRole';
+    
+    // Pagination settings
+    const recordsPerPage = 10;
+    let currentPage = 1;
+    let filteredMembers = [...allMembers];
+    let sortOrder = 'asc'; // Track sort order
+    
+    // Load family member names for search
+    const familyMemberNames = {};
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Total members loaded:', allMembers.length);
+        console.log('Members data:', allMembers);
+        renderMembers();
+        loadFamilyNames();
+        
+        // Event listeners
+        document.getElementById('searchBtn').addEventListener('click', filterMembers);
+        document.getElementById('resetBtn').addEventListener('click', resetFilters);
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                filterMembers();
+            }
+        });
+        document.getElementById('churchFilter').addEventListener('change', filterMembers);
+    });
+    
+    async function loadFamilyNames() {
+        for (const member of allMembers) {
+            try {
+                const response = await fetch(`/Member/GetFamilyInfo?memberId=${member.memberId}`);
+                const familyData = await response.json();
+                familyMemberNames[member.memberId] = familyData.map(f => f.Name).join(' ');
+            } catch (e) {
+                familyMemberNames[member.memberId] = '';
+            }
+        }
+    }
+    
+    function filterMembers() {
+        const churchId = document.getElementById('churchFilter').value;
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+        
+        filteredMembers = allMembers.filter(member => {
+            // Church filter
+            if (churchId && member.churchId != churchId) {
+                return false;
+            }
+            
+            // Search filter
+            if (searchTerm) {
+                const familyNames = familyMemberNames[member.memberId] || '';
+                const searchableText = `${member.name} ${member.phone} ${member.userId} ${member.churchName || ''} ${familyNames}`.toLowerCase();
+                if (!searchableText.includes(searchTerm)) {
+                    return false;
+                }
+            }
+            
+            return true;
+        });
+        
+        currentPage = 1; // Reset to first page
+        renderMembers();
+    }
+    
+    function resetFilters() {
+        document.getElementById('churchFilter').value = '';
+        document.getElementById('searchInput').value = '';
+        filteredMembers = [...allMembers];
+        currentPage = 1;
+        renderMembers();
+    }
+    
+    function renderMembers() {
+        const tbody = document.getElementById('memberTableBody');
+        const cardsContainer = document.getElementById('memberCardsContainer');
+        const recordCount = document.getElementById('recordCount');
+        const countText = document.getElementById('countText');
+        
+        // Show record count
+        countText.textContent = filteredMembers.length;
+        recordCount.style.display = 'block';
+        
+        // Calculate pagination
+        const totalPages = Math.ceil(filteredMembers.length / recordsPerPage);
+        const startIndex = (currentPage - 1) * recordsPerPage;
+        const endIndex = startIndex + recordsPerPage;
+        const pageMembers = filteredMembers.slice(startIndex, endIndex);
+        
+        // Render table rows (desktop)
+        if (pageMembers.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-muted mb-3 d-block"></i>
+                        <p class="text-muted">No members found.</p>
+                    </td>
+                </tr>
+            `;
+            cardsContainer.innerHTML = `
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-users fa-3x text-muted mb-3 d-block"></i>
+                        <p class="text-muted">No members found.</p>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Desktop table
+            tbody.innerHTML = pageMembers.map(member => {
+                const initials = member.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+                const colors = ['bg-primary', 'bg-success', 'bg-danger', 'bg-warning', 'bg-info'];
+                const colorIndex = Math.abs(member.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % colors.length;
+                
+                const imageHtml = member.profileImage 
+                    ? `<img src="${member.profileImage}" alt="${member.name}" class="rounded-full" style="width: 40px; height: 40px; object-fit: cover;" />`
+                    : `<div class="rounded-full d-inline-flex align-items-center justify-content-center ${colors[colorIndex]} text-white fw-bold" style="width: 40px; height: 40px; font-size: 14px;">${initials}</div>`;
+                
+                const genderBadge = member.gender === 'Male'
+                    ? '<span class="modern-badge modern-badge-info"><i class="fas fa-male"></i> Male</span>'
+                    : '<span class="modern-badge modern-badge-danger"><i class="fas fa-female"></i> Female</span>';
+                
+                return `
+                    <tr>
+                        <td>${imageHtml}</td>
+                        <td><strong>${member.userId}</strong></td>
+                        <td>
+                            <a href="/Member/Details/${member.memberId}" class="text-decoration-none fw-semibold" style="color: var(--primary-color);">
+                                ${member.name}
+                            </a>
+                        </td>
+                        <td class="hide-mobile">${member.churchName || ''}</td>
+                        <td>${member.phone || ''}</td>
+                        <td class="hide-mobile">${genderBadge}</td>
+                        <td class="hide-mobile">${member.dateOfBirth || ''}</td>
+                        <td class="hide-mobile">${member.familyCount}</td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/Member/Details/${member.memberId}"><i class="fas fa-eye me-2"></i>View</a></li>
+                                    <li><a class="dropdown-item" href="/Member/Edit/${member.memberId}"><i class="fas fa-edit me-2"></i>Edit</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form action="/Member/Delete/${member.memberId}" method="post" class="d-inline" 
+                                              onsubmit="return confirm('Are you sure you want to deactivate this member?');">
+                                            <input type="hidden" name="__RequestVerificationToken" value="${document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''}" />
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fas fa-trash me-2"></i>Delete
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Mobile cards
+            cardsContainer.innerHTML = pageMembers.map(member => {
+                const initials = member.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+                const colors = ['bg-primary', 'bg-success', 'bg-danger', 'bg-warning', 'bg-info'];
+                const colorIndex = Math.abs(member.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % colors.length;
+                
+                const imageHtml = member.profileImage 
+                    ? `<img src="${member.profileImage}" alt="${member.name}" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;" />`
+                    : `<div class="rounded-circle d-inline-flex align-items-center justify-content-center ${colors[colorIndex]} text-white fw-bold" style="width: 50px; height: 50px; font-size: 16px;">${initials}</div>`;
+                
+                // Church avatar (using first letter of church name)
+                const churchInitial = member.churchName ? member.churchName.charAt(0).toUpperCase() : 'C';
+                const churchColorIndex = member.churchName ? Math.abs(member.churchName.charCodeAt(0)) % colors.length : 0;
+                
+                return `
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="d-flex align-items-center flex-grow-1">
+                                    <div class="me-3">${imageHtml}</div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="card-title mb-1">
+                                            <a href="/Member/Details/${member.memberId}" class="text-decoration-none" style="color: var(--primary-color);">
+                                                ${member.name}
+                                            </a>
+                                        </h6>
+                                        <p class="card-text mb-1" style="font-size: 0.85rem;"><strong>ID:</strong> ${member.userId}</p>
+                                        <p class="card-text mb-1" style="font-size: 0.85rem;"><strong>Phone:</strong> ${member.phone || 'N/A'}</p>
+                                        <p class="card-text mb-1" style="font-size: 0.85rem;"><strong>DOB:</strong> ${member.dateOfBirth || 'N/A'}</p>
+                                        <p class="card-text mb-0" style="font-size: 0.85rem;"><strong>Church:</strong> ${member.churchName || 'N/A'}</p>
+                                    </div>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" href="/Member/Details/${member.memberId}"><i class="fas fa-eye me-2"></i>View</a></li>
+                                        <li><a class="dropdown-item" href="/Member/Edit/${member.memberId}"><i class="fas fa-edit me-2"></i>Edit</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form action="/Member/Delete/${member.memberId}" method="post" class="d-inline" 
+                                                  onsubmit="return confirm('Are you sure you want to deactivate this member?');">
+                                                <input type="hidden" name="__RequestVerificationToken" value="${document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''}" />
+                                                <button type="submit" class="dropdown-item text-danger">
+                                                    <i class="fas fa-trash me-2"></i>Delete
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Render pagination
+        renderPagination(totalPages);
+    }
+    
+    function renderPagination(totalPages) {
+        const paginationNav = document.getElementById('paginationNav');
+        const paginationList = document.getElementById('paginationList');
+        
+        if (totalPages <= 1) {
+            paginationNav.style.display = 'none';
+            return;
+        }
+        
+        paginationNav.style.display = 'block';
+        
+        let paginationHtml = '';
+        
+        // Previous button
+        paginationHtml += `
+            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="goToPage(${currentPage - 1}); return false;">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+        `;
+        
+        // Page numbers with ellipsis
+        const maxVisible = 5;
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, currentPage + 2);
+        
+        if (currentPage <= 3) {
+            endPage = Math.min(maxVisible, totalPages);
+        }
+        if (currentPage >= totalPages - 2) {
+            startPage = Math.max(1, totalPages - maxVisible + 1);
+        }
+        
+        if (startPage > 1) {
+            paginationHtml += `
+                <li class="page-item">
+                    <a class="page-link" href="#" onclick="goToPage(1); return false;">1</a>
+                </li>
+            `;
+            if (startPage > 2) {
+                paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            paginationHtml += `
+                <li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="goToPage(${i}); return false;">${i}</a>
+                </li>
+            `;
+        }
+        
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+            paginationHtml += `
+                <li class="page-item">
+                    <a class="page-link" href="#" onclick="goToPage(${totalPages}); return false;">${totalPages}</a>
+                </li>
+            `;
+        }
+        
+        // Next button
+        paginationHtml += `
+            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="goToPage(${currentPage + 1}); return false;">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        `;
+        
+        paginationList.innerHTML = paginationHtml;
+    }
+    
+    function goToPage(page) {
+        const totalPages = Math.ceil(filteredMembers.length / recordsPerPage);
+        if (page < 1 || page > totalPages) return;
+        
+        currentPage = page;
+        renderMembers();
+        
+        // Scroll to top of table
+        document.querySelector('.modern-table-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    function sortByUserId() {
+        const sortIcon = document.getElementById('sortIcon');
+        const sortIconMobile = document.getElementById('sortIconMobile');
+        
+        // Toggle sort order
+        if (sortOrder === 'asc') {
+            sortOrder = 'desc';
+            if (sortIcon) sortIcon.className = 'fas fa-sort-down';
+            if (sortIconMobile) sortIconMobile.className = 'fas fa-sort-down';
+        } else {
+            sortOrder = 'asc';
+            if (sortIcon) sortIcon.className = 'fas fa-sort-up';
+            if (sortIconMobile) sortIconMobile.className = 'fas fa-sort-up';
+        }
+        
+        // Sort filteredMembers by User ID
+        filteredMembers.sort((a, b) => {
+            // Extract prefix and number from User ID (e.g., P01 -> P and 01)
+            const getIdParts = (userId) => {
+                const prefix = userId.substring(0, 1);
+                const number = parseInt(userId.substring(1)) || 0;
+                return { prefix, number };
+            };
+            
+            const aParts = getIdParts(a.userId);
+            const bParts = getIdParts(b.userId);
+            
+            // First compare by prefix
+            if (aParts.prefix !== bParts.prefix) {
+                return sortOrder === 'asc' 
+                    ? aParts.prefix.localeCompare(bParts.prefix)
+                    : bParts.prefix.localeCompare(aParts.prefix);
+            }
+            
+            // Then compare by number
+            return sortOrder === 'asc' 
+                ? aParts.number - bParts.number
+                : bParts.number - aParts.number;
+        });
+        
+        currentPage = 1; // Reset to first page
+        renderMembers();
+    }
+</script>
+
+<style>
+    .content-wrapper {
+        padding: 0;
+    }
+
+    .pagination {
+        margin-top: 1rem;
+    }
+    
+    .page-link {
+        color: #2c3e50;
+        border: 1px solid #dfe6e9;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+    
+    .page-link:hover {
+        background-color: #f5f7fa;
+        color: #2c3e50;
+        border-color: #dfe6e9;
+    }
+    
+    .page-item.active .page-link {
+        background-color: #2c3e50;
+        border-color: #2c3e50;
+        color: white;
+    }
+    
+    .page-item.disabled .page-link {
+        color: #7f8c8d;
+        background-color: #f5f7fa;
+        border-color: #dfe6e9;
+        cursor: not-allowed;
+    }
+    
+    .btn-sm {
+        font-size: 0.813rem;
+        transition: all 0.2s;
+    }
+    
+    .btn-sm:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .btn-warning {
+        background-color: #e67e22;
+        border-color: #e67e22;
+        color: white;
+    }
+    
+    .btn-warning:hover {
+        background-color: #d35400;
+        border-color: #d35400;
+    }
+    
+    .btn-danger {
+        background-color: #c0392b;
+        border-color: #c0392b;
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background-color: #a93226;
+        border-color: #a93226;
+    }
+    
+    /* Mobile-only styles */
+    @@media (max-width: 767.98px) {
+        .modern-page-title {
+            font-size: 1rem !important;
+            white-space: nowrap;
+        }
+        
+        .flex {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            flex-wrap: nowrap !important;
+        }
+        
+        .modern-btn {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            white-space: nowrap;
+        }
+        
+        .modern-btn i {
+            font-size: 1.25rem;
+        }
+        
+        .btn-text {
+            display: none;
+        }
+        
+        .dropdown-menu:not(#notificationDropdown + .dropdown-menu) { position: absolute !important; top: 100% !important; right: 0 !important; left: auto !important; z-index: 1050 !important; min-width: 120px !important; max-width: 150px !important; transform: none !important; will-change: auto !important; }
+        
+        .dropdown-menu.show {
+            display: block !important;
+        }
+        
+        .dropdown {
+            position: relative !important;
+        }
+        
+        .card {
+            overflow: visible !important;
+            position: relative !important;
+        }
+        
+        .card-body {
+            overflow: visible !important;
+        }
+        
+        /* Prevent body overflow when dropdown is open */
+        body {
+            overflow-x: hidden !important;
+        }
+        
+        .modern-form-control {
+            max-width: 100% !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        
+        .modern-card-body {
+            padding: 0 10px !important;
+        }
+        
+        .mb-lg {
+            margin-bottom: 0.5rem !important;
+        }
+        
+        .modern-form-group {
+            margin-bottom: 0.5rem !important;
+        }
+        
+        /* Family table mobile layout */
+        .table-responsive {
+            overflow-x: visible !important;
+        }
+        
+        #familyTable thead {
+            display: none;
+        }
+        
+        #familyTable tbody tr {
+            display: block;
+            border: 1px solid #ddd;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        
+        #familyTable tbody td {
+            display: inline-block;
+            width: 48%;
+            margin-right: 2%;
+            margin-bottom: 10px;
+            border: none;
+            padding: 0;
+            vertical-align: top;
+        }
+        
+        #familyTable tbody td:nth-child(odd) {
+            margin-right: 2%;
+        }
+        
+        #familyTable tbody td:nth-child(even) {
+            margin-right: 0;
+        }
+        
+        #familyTable tbody td:last-child {
+            width: 100%;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        #familyTable tbody td label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        #familyTable tbody td .form-control {
+            width: 100%;
+        }
+    }
+</style>
+
+<style>
+    .pagination {
+        margin-bottom: 0;
+    }
+    
+    .page-link {
+        color: #2c3e50;
+        border: 1px solid #dfe6e9;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+    }
+    
+    .page-link:hover {
+        background-color: #f5f7fa;
+        border-color: #2c3e50;
+        color: #2c3e50;
+    }
+    
+    .page-item.active .page-link {
+        background-color: #2c3e50;
+        border-color: #2c3e50;
+        color: white;
+    }
+    
+    .page-item.disabled .page-link {
+        color: #7f8c8d;
+        background-color: #f5f7fa;
+        border-color: #dfe6e9;
+    }
+    
+    /* Action buttons styling */
+    .btn-sm {
+        font-size: 0.813rem;
+        transition: all 0.2s;
+    }
+    
+    .btn-sm:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .btn-warning {
+        background-color: #e67e22;
+        border-color: #e67e22;
+        color: white;
+    }
+    
+    .btn-warning:hover {
+        background-color: #d35400;
+        border-color: #d35400;
+        color: white;
+    }
+    
+    .btn-danger {
+        background-color: #c0392b;
+        border-color: #c0392b;
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background-color: #a93226;
+        border-color: #a93226;
+        color: white;
+    }
+</style>
+
+

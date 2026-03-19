@@ -1,0 +1,149 @@
+@model PBMChurch.Models.ViewModels.MoveTaskViewModel
+
+<div class="modal fade" id="moveTaskModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form asp-action="Move" method="post" id="moveTaskForm">
+                <input asp-for="TaskId" type="hidden">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-arrows-alt me-2"></i>Move Task
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    @if (ViewBag.HasConflicts == true)
+                    {
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Time Conflict Detected!</strong>
+                            <p class="mb-2">The following tasks are already scheduled during this time:</p>
+                            @foreach (var conflict in Model.ConflictingTasks)
+                            {
+                                <div class="border rounded p-2 mb-2" style="border-left: 4px solid @conflict.TypeColor !important;">
+                                    <strong>@conflict.Summary</strong>
+                                    <br><small class="text-muted">@conflict.FormattedTime</small>
+                                </div>
+                            }
+                            <p class="mb-0">Please choose a different time or proceed anyway.</p>
+                        </div>
+                    }
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="NewDate" class="form-label">New Date <span class="text-danger">*</span></label>
+                            <input asp-for="NewDate" type="date" class="form-control" required>
+                            <span asp-validation-for="NewDate" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="NewStartTime" class="form-label">New Start Time</label>
+                            <input asp-for="NewStartTime" type="time" class="form-control">
+                            <span asp-validation-for="NewStartTime" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="NewEndTime" class="form-label">New End Time</label>
+                            <input asp-for="NewEndTime" type="time" class="form-control">
+                            <span asp-validation-for="NewEndTime" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3 d-flex align-items-end">
+                            <button type="button" class="btn btn-outline-info" onclick="checkConflicts()">
+                                <i class="fas fa-search me-2"></i>Check Conflicts
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="conflictResults"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-arrows-alt me-2"></i>Move Task
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function checkConflicts() {
+        const taskId = document.querySelector('input[name="TaskId"]').value;
+        const newDate = document.querySelector('input[name="NewDate"]').value;
+        const startTime = document.querySelector('input[name="NewStartTime"]').value;
+        const endTime = document.querySelector('input[name="NewEndTime"]').value;
+        
+        if (!newDate || !startTime || !endTime) {
+            alert('Please fill in all date and time fields to check for conflicts.');
+            return;
+        }
+        
+        // Simulate conflict check (in real implementation, this would be an AJAX call)
+        fetch(`/TaskCalendar/GetDayTasks?date=${newDate}`)
+            .then(response => response.json())
+            .then(tasks => {
+                const conflicts = tasks.filter(task => {
+                    if (task.taskId == taskId || task.isAllDay) return false;
+                    
+                    const taskStart = task.startTime;
+                    const taskEnd = task.endTime;
+                    
+                    if (taskStart && taskEnd) {
+                        return (startTime < taskEnd && endTime > taskStart);
+                    }
+                    return false;
+                });
+                
+                const resultsDiv = document.getElementById('conflictResults');
+                
+                if (conflicts.length > 0) {
+                    let html = '<div class="alert alert-warning mt-3">';
+                    html += '<i class="fas fa-exclamation-triangle me-2"></i>';
+                    html += '<strong>Conflicts Found:</strong><br>';
+                    
+                    conflicts.forEach(conflict => {
+                        html += `<div class="border rounded p-2 mt-2" style="border-left: 4px solid ${conflict.typeColor} !important;">`;
+                        html += `<strong>${conflict.summary}</strong><br>`;
+                        html += `<small class="text-muted">${conflict.formattedTime}</small>`;
+                        html += '</div>';
+                    });
+                    
+                    html += '</div>';
+                    resultsDiv.innerHTML = html;
+                } else {
+                    resultsDiv.innerHTML = '<div class="alert alert-success mt-3"><i class="fas fa-check me-2"></i>No conflicts found for this time slot.</div>';
+                }
+            });
+    }
+    
+    document.getElementById('moveTaskForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch('/TaskCalendar/Move', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('moveTaskModal')).hide();
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    calendar.refetchEvents();
+                    location.reload();
+                }
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+</script>

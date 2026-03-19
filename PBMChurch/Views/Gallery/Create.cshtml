@@ -1,0 +1,151 @@
+@model PBMChurch.Models.GalleryImage
+
+@{
+    ViewData["Title"] = "Upload Gallery Image";
+}
+
+<div class="page-header">
+    <h2><i class="fas fa-upload me-2"></i>Upload Gallery Image</h2>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to Gallery
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-image me-1"></i>Image File <span class="text-danger">*</span>
+                        </label>
+                        <input type="file" name="imageFile" class="form-control" accept="image/*" required 
+                               onchange="previewImage(event)">
+                        <small class="form-text text-muted">
+                            Allowed formats: JPG, PNG, GIF. Max size: 5MB. Recommended: 1200x800px
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label">
+                            <i class="fas fa-heading me-1"></i>Title
+                        </label>
+                        <input asp-for="Title" class="form-control" placeholder="Enter image title" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">
+                            <i class="fas fa-align-left me-1"></i>Description
+                        </label>
+                        <textarea asp-for="Description" class="form-control" rows="3" 
+                                  placeholder="Enter image description"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ChurchId" class="form-label">
+                            <i class="fas fa-church me-1"></i>Church
+                        </label>
+                        <select asp-for="ChurchId" class="form-select">
+                            <option value="">All Churches</option>
+                            @foreach (var church in ViewBag.Churches)
+                            {
+                                <option value="@church.ChurchId">@church.ChurchName</option>
+                            }
+                        </select>
+                        <small class="form-text text-muted">Leave empty for general gallery images</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Category" class="form-label">
+                            <i class="fas fa-tag me-1"></i>Category
+                        </label>
+                        <select asp-for="Category" class="form-select">
+                            <option value="">Select Category</option>
+                            <option value="Service">Service</option>
+                            <option value="Worship">Worship</option>
+                            <option value="Community">Community</option>
+                            <option value="Event">Event</option>
+                            <option value="Youth">Youth</option>
+                            <option value="Outreach">Outreach</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="DisplayOrder" class="form-label">
+                            <i class="fas fa-sort-numeric-up me-1"></i>Display Order
+                        </label>
+                        <input asp-for="DisplayOrder" type="number" class="form-control" value="1" min="0" />
+                        <small class="form-text text-muted">Lower numbers appear first</small>
+                        <span asp-validation-for="DisplayOrder" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input asp-for="IsActive" class="form-check-input" type="checkbox" checked />
+                        <label asp-for="IsActive" class="form-check-label">
+                            Active (Show on landing page)
+                        </label>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-upload me-2"></i>Upload Image
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card bg-light">
+                        <div class="card-header">
+                            <i class="fas fa-eye me-2"></i>Image Preview
+                        </div>
+                        <div class="card-body text-center">
+                            <img id="imagePreview" src="/images/placeholder.jpg" alt="Preview" 
+                                 class="img-fluid rounded shadow" style="max-height: 400px; display: none;">
+                            <div id="previewPlaceholder" class="text-muted py-5">
+                                <i class="fas fa-image fa-4x mb-3"></i>
+                                <p>Select an image to preview</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-3">
+                        <h6><i class="fas fa-lightbulb me-2"></i>Tips for Best Results:</h6>
+                        <ul class="mb-0 small">
+                            <li>Use high-quality, well-lit photos</li>
+                            <li>Landscape orientation works best</li>
+                            <li>Ensure faces are clearly visible</li>
+                            <li>Avoid cluttered backgrounds</li>
+                            <li>Use descriptive titles and descriptions</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagePreview').src = e.target.result;
+                    document.getElementById('imagePreview').style.display = 'block';
+                    document.getElementById('previewPlaceholder').style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+}

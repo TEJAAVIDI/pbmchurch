@@ -1,0 +1,69 @@
+@model IEnumerable<PBMChurch.Models.AdminUser>
+@{
+    ViewData["Title"] = "User Management";
+}
+<h2>User Management</h2>
+<a class="btn btn-primary mb-2" href="@Url.Action("Create")">Add New User</a>
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<!-- Desktop Table -->
+<div class="table-responsive d-none d-md-block">
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Password</th>
+                <th>Is Active</th>
+                <th>Last Login</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.Email</td>
+                    <td>@user.Phone</td>
+                    <td>@user.Password</td>
+                    <td>@(user.IsActive ? "Yes" : "No")</td>
+                    <td>@(user.LastLoginDate?.ToString("g") ?? "Never")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Mobile Cards -->
+<div class="d-md-none">
+    @if (Model.Any())
+    {
+        @foreach (var user in Model)
+        {
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="card-title mb-0">@user.Email</h6>
+                        <span class="badge @(user.IsActive ? "bg-success" : "bg-danger")">
+                            @(user.IsActive ? "Active" : "Inactive")
+                        </span>
+                    </div>
+                    <p class="mb-1"><strong>Phone:</strong> @user.Phone</p>
+                    <p class="mb-1"><strong>Password:</strong> @user.Password</p>
+                    <p class="mb-0"><strong>Last Login:</strong> @(user.LastLoginDate?.ToString("g") ?? "Never")</p>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-users fa-3x text-muted mb-3 d-block"></i>
+                <p class="text-muted">No users found</p>
+            </div>
+        </div>
+    }
+}</div>

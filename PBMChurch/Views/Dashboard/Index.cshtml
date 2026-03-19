@@ -1,0 +1,804 @@
+@model PBMChurch.Models.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<!-- Modern Header -->
+<div class="dashboard-header mb-4">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <div class="welcome-section">
+                <h1 class="dashboard-title">
+                    <i class="fas fa-cross me-3"></i>Church Dashboard
+                </h1>
+                <p class="dashboard-subtitle">
+                    <i class="fas fa-heart me-2"></i>Welcome back, @User.FindFirst("FullName")?.Value
+                    <span class="ms-3 text-muted d-none d-md-inline" id="currentDate">@DateTime.Now.ToString("dddd, MMMM dd, yyyy")</span>
+                </p>
+            </div>
+        </div>
+        <div class="col-12 d-md-none mt-3">
+            <div class="bible-verse">
+                <i class="fas fa-book-open me-2"></i>
+                <small>"For where two or three gather in my name, there am I with them." - Matthew 18:20</small>
+            </div>
+        </div>
+        <div class="col-md-4 text-end d-none d-md-block">
+            <div class="bible-verse">
+                <i class="fas fa-book-open me-2"></i>
+                <small>"For where two or three gather in my name, there am I with them." - Matthew 18:20</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bible Reading Card -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bible-reading-card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="card-title mb-2">
+                            <i class="fas fa-book-open me-2"></i>Today's Bible Reading - Day @Model.TodayBibleReading.DayOfYear of @Model.TodayBibleReading.Year
+                        </h5>
+                        <div class="bible-stats">
+                            <span class="badge bg-success">Today's Reading: @Model.TodayBibleReading.TodaysReading</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="progress-circle">
+                            <div class="progress-text">@Model.TodayBibleReading.Progress%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modern Statistics Cards -->
+<div class="row g-4 mb-5">
+    <div class="col-xl-3 col-lg-6 col-md-6 col-12">
+        <div class="modern-stat-card members-card">
+            <div class="card-content">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number counter" data-target="@Model.TotalMembers">0</h3>
+                    <p class="stat-label">Total Members</p>
+                    <div class="stat-description">Active church family</div>
+                </div>
+            </div>
+            <div class="card-decoration"></div>
+        </div>
+    </div>
+
+    @if (DateTime.Now.DayOfWeek == DayOfWeek.Sunday && Model.TodayChurchAttendances.Any())
+    {
+        <div class="col-xl-3 col-lg-6 col-md-6 col-12">
+            <div class="modern-stat-card present-card">
+                <div class="card-content">
+                    <div class="stat-icon">
+                        <i class="fas fa-praying-hands"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="stat-number counter" data-target="@Model.TodayChurchAttendances.Sum(x => x.PresentCount)">0</h3>
+                        <p class="stat-label">Present Today</p>
+                        <div class="stat-description">All Churches</div>
+                    </div>
+                </div>
+                <div class="card-decoration"></div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6 col-md-6 col-12">
+            <div class="modern-stat-card absent-card">
+                <div class="card-content">
+                    <div class="stat-icon">
+                        <i class="fas fa-dove"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="stat-number counter" data-target="@Model.TodayChurchAttendances.Sum(x => x.AbsentCount)">0</h3>
+                        <p class="stat-label">Absent Today</p>
+                        <div class="stat-description">Praying for them</div>
+                    </div>
+                </div>
+                <div class="card-decoration"></div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="col-xl-3 col-lg-6 col-md-6 col-12">
+            <div class="modern-stat-card present-card">
+                <div class="card-content">
+                    <div class="stat-icon">
+                        <i class="fas fa-praying-hands"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="stat-number counter" data-target="@Model.PresentTodayForSelectedChurch">0</h3>
+                        <p class="stat-label">Present Today</p>
+                        <div class="stat-description">@Model.SelectedChurchName</div>
+                    </div>
+                </div>
+                <div class="card-decoration"></div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6 col-md-6 col-12">
+            <div class="modern-stat-card absent-card">
+                <div class="card-content">
+                    <div class="stat-icon">
+                        <i class="fas fa-dove"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="stat-number counter" data-target="@Model.AbsentTodayForSelectedChurch">0</h3>
+                        <p class="stat-label">Absent Today</p>
+                        <div class="stat-description">@Model.SelectedChurchName</div>
+                    </div>
+                </div>
+                <div class="card-decoration"></div>
+            </div>
+        </div>
+    }
+
+    <div class="col-xl-3 col-lg-6 col-md-6 col-12">
+        <div class="modern-stat-card birthday-card">
+            <div class="card-content">
+                <div class="stat-icon">
+                    <i class="fas fa-birthday-cake"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-number counter" data-target="@Model.BirthdaysToday">0</h3>
+                    <p class="stat-label">Birthdays Today</p>
+                    <div class="stat-description">Celebrating life</div>
+                </div>
+            </div>
+            <div class="card-decoration"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Financial Summary -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-4 col-lg-4 col-md-12">
+        <div class="card h-100" style="background: #ffffff;">
+            <div class="card-header" style="background: #27ae60; color: #ffffff;">
+                <i class="fas fa-arrow-up me-2"></i>Monthly Income
+            </div>
+            <div class="card-body text-center">
+                <h1 class="mb-0" style="color: #27ae60; font-weight: 700; font-size: 2rem;">₹ @Model.MonthIncome.ToString("N2")</h1>
+                <small style="color: #7f8c8d; font-size: 0.813rem;">@DateTime.Now.ToString("MMMM yyyy")</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 col-lg-4 col-md-12">
+        <div class="card h-100" style="background: #ffffff;">
+            <div class="card-header" style="background: #c0392b; color: #ffffff;">
+                <i class="fas fa-arrow-down me-2"></i>Monthly Expense
+            </div>
+            <div class="card-body text-center">
+                <h1 class="mb-0" style="color: #c0392b; font-weight: 700; font-size: 2rem;">₹ @Model.MonthExpense.ToString("N2")</h1>
+                <small style="color: #7f8c8d; font-size: 0.813rem;">@DateTime.Now.ToString("MMMM yyyy")</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 col-lg-4 col-md-12">
+        <div class="card h-100" style="background: #ffffff;">
+            <div class="card-header" style="background: @(Model.MonthBalance >= 0 ? "#16a085" : "#c0392b"); color: #ffffff;">
+                <i class="fas fa-balance-scale me-2"></i>Balance
+            </div>
+            <div class="card-body text-center">
+                <h1 class="mb-0" style="color: @(Model.MonthBalance >= 0 ? "#27ae60" : "#c0392b"); font-weight: 700; font-size: 2rem;">
+                    ₹ @Model.MonthBalance.ToString("N2")
+                </h1>
+                <small style="color: #7f8c8d; font-size: 0.813rem;">@DateTime.Now.ToString("MMMM yyyy")</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts and Lists Row -->
+<div class="row g-3 mb-4">
+    <!-- Church-wise Attendance -->
+    <div class="col-xl-6 col-lg-12">
+        <div class="card h-100" style="background: #ffffff;">
+            <div class="card-header" style="background: #2c3e50; color: #ffffff;">
+                <i class="fas fa-chart-bar me-2"></i>Church-wise Attendance Today
+            </div>
+            <div class="card-body">
+                @if (Model.ChurchWiseAttendance.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead style="background: #f5f7fa;">
+                                <tr>
+                                    <th style="color: #2c3e50; font-weight: 600;">Church</th>
+                                    <th class="text-center" style="color: #2c3e50; font-weight: 600;">Total</th>
+                                    <th class="text-center" style="color: #2c3e50; font-weight: 600;">Present</th>
+                                    <th class="text-center" style="color: #2c3e50; font-weight: 600;">Absent</th>
+                                    <th class="text-center" style="color: #2c3e50; font-weight: 600;">%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var church in Model.ChurchWiseAttendance)
+                                {
+                                    <tr>
+                                        <td style="color: #2c3e50; font-weight: 500;">@church.ChurchName</td>
+                                        <td class="text-center" style="color: #2c3e50; font-weight: 600;">@church.TotalMembers</td>
+                                        <td class="text-center"><span class="badge" style="background: #27ae60; color: #ffffff;">@church.PresentCount</span></td>
+                                        <td class="text-center"><span class="badge" style="background: #c0392b; color: #ffffff;">@church.AbsentCount</span></td>
+                                        <td class="text-center" style="color: #16a085; font-weight: 700;">@church.AttendancePercentage.ToString("F1")%</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert" style="background: #e8f8f5; border-left: 4px solid #16a085; color: #2c3e50;">
+                        <i class="fas fa-info-circle me-2"></i>No attendance data available for today.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Birthdays -->
+    <div class="col-xl-6 col-lg-12">
+        <div class="card h-100" style="background: #ffffff;">
+            <div class="card-header" style="background: #2c3e50; color: #ffffff;">
+                <i class="fas fa-birthday-cake me-2"></i>Today's Birthdays
+            </div>
+            <div class="card-body">
+                @if (Model.TodayBirthdays.Any())
+                {
+                    <div class="birthday-cards">
+                        @foreach (var member in Model.TodayBirthdays)
+                        {
+                            <div class="birthday-celebration-card">
+                                <div class="d-flex align-items-center">
+                                    <div class="birthday-icon me-3">
+                                        <i class="fas fa-birthday-cake"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="birthday-name">@member.Name</h6>
+                                        <div class="birthday-details">@member.ChurchName • Age: @member.Age years</div>
+                                    </div>
+                                    <div class="birthday-badge">
+                                        <i class="fas fa-gift"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="no-birthdays-modern">
+                        <div class="birthday-empty-icon">
+                            <i class="fas fa-calendar-heart"></i>
+                        </div>
+                        <h5 class="no-birthday-title">No Birthdays Today</h5>
+                        <p class="no-birthday-text">Everyone's special day is coming soon!</p>
+                        <small class="text-white-50">"Children are a gift from the Lord" - Psalm 127:3</small>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming Birthdays -->
+@if (Model.UpcomingBirthdays.Any())
+{
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-calendar-alt me-2"></i>Upcoming Birthdays (Next 7 Days)
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @foreach (var member in Model.UpcomingBirthdays.Take(6))
+                        {
+                            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+                                <a href="@Url.Action("Details", "Member", new { id = member.MemberId })" class="text-decoration-none">
+                                    <div class="card border-primary h-100 upcoming-birthday-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-user-circle fa-3x text-primary mb-2"></i>
+                                            <h6 class="mb-1">@member.Name</h6>
+                                            <small class="text-muted d-block mb-1">@member.ChurchName</small>
+                                            <span class="badge bg-info">In @member.DaysUntilBirthday days</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- This Week Meetings -->
+@if (Model.ThisWeekMeetings.Any())
+{
+    <div class="row g-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-calendar-week me-2"></i>This Week's Meetings
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Church</th>
+                                    <th class="d-none d-md-table-cell">Day</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var meeting in Model.ThisWeekMeetings)
+                                {
+                                    var isPast = meeting.Date < DateTime.Today;
+                                    var isToday = meeting.Date == DateTime.Today;
+                                    <tr>
+                                        <td>@meeting.ChurchName</td>
+                                        <td class="d-none d-md-table-cell">@meeting.DayOfWeek</td>
+                                        <td>
+                                            <div class="d-md-none">
+                                                <div>@meeting.Date.ToString("MMM dd")</div>
+                                                <small class="text-muted">@meeting.DayOfWeek</small>
+                                            </div>
+                                            <div class="d-none d-md-block">
+                                                @meeting.Date.ToString("MMM dd, yyyy")
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if (isPast)
+                                            {
+                                                <span class="badge bg-secondary">Completed</span>
+                                            }
+                                            else if (isToday)
+                                            {
+                                                <span class="badge bg-success">Today</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-primary">Upcoming</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Update date to client's local time
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateElement = document.getElementById('currentDate');
+            if (dateElement) {
+                const now = new Date();
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                dateElement.textContent = now.toLocaleDateString('en-US', options);
+            }
+        });
+        
+        // Counter Animation
+        function animateCounter(element) {
+            const target = parseInt(element.getAttribute('data-target'));
+            const duration = 2000; // 2 seconds
+            const increment = target / (duration / 16); // 60fps
+            let current = 0;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current);
+                }
+            }, 16);
+        }
+        
+        // Initialize counters when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const counters = document.querySelectorAll('.counter');
+            counters.forEach(counter => {
+                setTimeout(() => animateCounter(counter), 500);
+            });
+        });
+        
+        // Auto-refresh dashboard every 5 minutes
+        setTimeout(function () {
+            location.reload();
+        }, 300000);
+    </script>
+    
+    <style>
+        /* Bible Reading Card */
+        .bible-reading-card {
+            background: rgba(255, 255, 255, 0.9);
+            color: #2c3e50;
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .bible-reading-card .card-title {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .bible-stats .badge {
+            font-size: 0.85rem;
+            padding: 6px 10px;
+            margin-bottom: 5px;
+        }
+        
+        .progress-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: conic-gradient(#667eea 0deg, #667eea calc(98.9 * 3.6deg), rgba(102, 126, 234, 0.2) calc(98.9 * 3.6deg));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .progress-circle::before {
+            content: '';
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            position: absolute;
+        }
+        
+        .progress-text {
+            position: relative;
+            z-index: 1;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: #2c3e50;
+        }
+        
+        @@media (max-width: 768px) {
+            .bible-reading-card .row {
+                text-align: center;
+            }
+            
+            .bible-reading-card .col-md-4 {
+                margin-top: 15px;
+            }
+            
+            .bible-stats {
+                text-align: center;
+            }
+            
+            .bible-stats .badge {
+                display: block;
+                margin: 3px auto;
+                width: fit-content;
+            }
+            
+            .progress-circle {
+                margin: 0 auto;
+            }
+        }
+        
+        /* Modern Dashboard Styling */
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .dashboard-header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .dashboard-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .dashboard-subtitle {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            margin-bottom: 0;
+        }
+        
+        .bible-verse {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            font-style: italic;
+        }
+        
+        /* Modern Stat Cards */
+        .modern-stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            height: 180px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+        
+        .modern-stat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+            opacity: 0.2;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        
+        .stat-number {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            opacity: 0.9;
+        }
+        
+        .stat-description {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 0;
+        }
+        
+        .card-decoration {
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            opacity: 0.1;
+            z-index: 1;
+        }
+        
+        /* Card Color Themes */
+        .members-card {
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+            color: #2c3e50;
+        }
+        
+        .members-card .card-decoration {
+            background: #4caf50;
+        }
+        
+        .present-card {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: #2c3e50;
+        }
+        
+        .present-card .card-decoration {
+            background: #2196f3;
+        }
+        
+        .absent-card {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            color: #2c3e50;
+        }
+        
+        .absent-card .card-decoration {
+            background: #ff9800;
+        }
+        
+        .birthday-card {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #2c3e50;
+        }
+        
+        .birthday-card .card-decoration {
+            background: #2c3e50;
+        }
+        
+        /* Birthday Cards Styling */
+        .birthday-celebration-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 20px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 15px;
+        }
+        
+        .birthday-celebration-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+        
+        .birthday-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+        }
+        
+        .birthday-name {
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .birthday-details {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+        
+        .birthday-badge {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+        
+        /* No Birthdays Styling */
+        .no-birthdays-modern {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 20px;
+            color: white;
+            padding: 40px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+        
+        @@media (max-width: 768px) {
+            .no-birthdays-modern {
+                padding: 20px;
+            }
+        }
+        
+        .birthday-empty-icon {
+            font-size: 3rem;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+        
+        .no-birthday-title {
+            font-weight: 600;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .no-birthday-text {
+            margin-bottom: 0;
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+        
+        /* Modern Cards */
+        .modern-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: none;
+        }
+        
+        .modern-card-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        /* Counter Animation */
+        .counter {
+            transition: all 0.3s ease;
+        }
+        
+        /* Mobile Responsive Styles */
+        @@media (max-width: 768px) {
+            .birthday-empty-icon {
+                font-size: 2.5rem;
+                margin-bottom: 8px;
+            }
+            
+            .dashboard-header {
+                padding: 20px;
+            }
+            
+            .dashboard-title {
+                font-size: 1.8rem;
+                margin-bottom: 8px;
+            }
+            
+            .dashboard-subtitle {
+                font-size: 1rem;
+            }
+            
+            .modern-stat-card {
+                height: 160px;
+                padding: 20px;
+            }
+            
+            .stat-number {
+                font-size: 2.5rem;
+            }
+            
+            .bible-verse {
+                text-align: center;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Upcoming Birthday Card Hover Effect */
+        .upcoming-birthday-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upcoming-birthday-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 123, 255, 0.3);
+        }
+    </style>
+}

@@ -1,0 +1,1220 @@
+@{
+    ViewData["Title"] = "Mark Attendance";
+}
+
+<div class="page-header">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+        <h2 class="mb-0"><i class="fas fa-clipboard-check me-2"></i>Mark Attendance</h2>
+        <a href="/Member/Create" class="btn btn-success">
+            <i class="fas fa-user-plus me-2"></i>Member
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-4">Enter User ID</h5>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Church <span class="text-danger">*</span></label>
+                    <select id="churchSelect" class="form-select" required>
+                        <option value="">Select Church</option>
+                        @if (ViewBag.Churches != null)
+                        {
+                            foreach (var item in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Churches)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        }
+                    </select>
+                    <small class="text-muted">This will remain selected for multiple entries</small>
+                </div>
+
+                <div id="churchInfo" class="mb-3" style="display: none;">
+                    <div class="alert alert-primary">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        <strong>Meeting Days:</strong> <span id="meetingDays"></span><br>
+                        <i class="fas fa-clock me-2"></i>
+                        <strong>Today is:</strong> <span id="todayDay"></span> <span id="meetingStatus"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Attendance Mode</label>
+                    <div class="btn-group w-100" role="group">
+                        <input type="radio" class="btn-check" name="attendanceMode" id="modeIndividual" value="individual" checked>
+                        <label class="btn btn-outline-primary" for="modeIndividual">
+                            <i class="fas fa-user me-1"></i>Individual
+                        </label>
+                        <input type="radio" class="btn-check" name="attendanceMode" id="modeFamily" value="family">
+                        <label class="btn btn-outline-primary" for="modeFamily">
+                            <i class="fas fa-users me-1"></i>Full Family
+                        </label>
+                    </div>
+                    <small class="text-muted">Selection will be remembered</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">User ID <span class="text-danger">*</span></label>
+                    <input id="userIdInput" type="text" class="form-control form-control-lg" placeholder="Type User ID..." autofocus />
+                    <small class="text-muted">Start typing to search automatically</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Attendance Date <span class="text-danger">*</span></label>
+                    <input id="attendanceDate" type="date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                </div>
+
+                <div id="memberDetails" class="mb-3" style="display: none;">
+                    <div class="card border-primary">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <div id="memberImageContainer">
+                                        <!-- Image or avatar will be inserted here -->
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <h6 class="fw-bold mb-1" id="memberName"></h6>
+                                    <p class="mb-0 text-muted small">
+                                        <i class="fas fa-phone me-1"></i><span id="memberPhone"></span>
+                                    </p>
+                                    <p class="mb-0 text-muted small">
+                                        <i class="fas fa-users me-1"></i><span id="memberFamily"></span>
+                                    </p>
+                                </div>
+                            </div>
+                            <input type="hidden" id="memberId" />
+                        </div>
+                    </div>
+                </div>
+
+                <div id="notFoundMessage" class="alert alert-warning" style="display: none;">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>User ID not found</strong> in the selected church.
+                </div>
+
+                <div class="d-grid">
+                    <button id="markPresentBtn" type="button" class="btn btn-success btn-lg" disabled>
+                        <i class="fas fa-check-circle me-2"></i>Mark Present
+                    </button>
+                </div>
+
+                <div id="alertContainer" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">Today's Attendance</h5>
+                    <button id="refreshBtn" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-sync me-1"></i>Refresh
+                    </button>
+                </div>
+                
+                <div id="todayAttendanceList">
+                    <div class="text-center py-4">
+                        <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                        <p class="text-muted mt-2">Loading attendance records...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let selectedChurchId = null;
+        let currentMember = null;
+        let attendanceSearchTimeout = null;
+        let attendanceMode = '@ViewBag.AttendanceMode';
+
+        $(document).ready(function() {
+            // Set initial mode from server
+            $(`input[name="attendanceMode"][value="${attendanceMode}"]`).prop('checked', true);
+
+            // Handle attendance mode change
+            $('input[name="attendanceMode"]').on('change', function() {
+                attendanceMode = $(this).val();
+                $.post('/Attendance/SaveAttendanceMode', { mode: attendanceMode });
+                const modeText = attendanceMode === 'family' ? 'Full Family' : 'Individual';
+                showAlert(`Attendance mode changed to: ${modeText}`, 'info');
+            });
+
+            // Load today's attendance on page load
+            loadTodayAttendance();
+
+            // Church selection - keep it sticky and show meeting day info
+            $('#churchSelect').on('change', function() {
+                selectedChurchId = $(this).val();
+                if (selectedChurchId) {
+                    $('#userIdInput').prop('disabled', false).focus();
+                    loadChurchInfo();
+                    loadTodayAttendance();
+                } else {
+                    $('#userIdInput').prop('disabled', true);
+                    resetMemberDetails();
+                    $('#churchInfo').hide();
+                }
+            });
+
+            // User ID input - auto search as user types
+            $('#userIdInput').on('input', function() {
+                clearTimeout(attendanceSearchTimeout);
+                const userId = $(this).val().trim();
+                
+                if (!selectedChurchId) {
+                    showAlert('Please select a church first', 'warning');
+                    return;
+                }
+
+                if (userId.length >= 2) {
+                    // Debounce search - wait 500ms after user stops typing
+                    attendanceSearchTimeout = setTimeout(function() {
+                        lookupMember(userId);
+                    }, 500);
+                } else {
+                    resetMemberDetails();
+                    $('#notFoundMessage').hide();
+                }
+            });
+
+            // Also allow Enter key for immediate search
+            $('#userIdInput').on('keypress', function(e) {
+                if (e.which === 13) { // Enter key
+                    e.preventDefault();
+                    clearTimeout(attendanceSearchTimeout);
+                    const userId = $(this).val().trim();
+                    if (userId) {
+                        lookupMember(userId);
+                    }
+                }
+            });
+
+            // Mark Present button
+            $('#markPresentBtn').on('click', function() {
+                markAttendance();
+            });
+
+            // Refresh button
+            $('#refreshBtn').on('click', function() {
+                loadTodayAttendance();
+            });
+
+            // Also refresh when date changes
+            $('#attendanceDate').on('change', function() {
+                loadTodayAttendance();
+            });
+
+            // Disable User ID input until church is selected
+            $('#userIdInput').prop('disabled', true);
+        });
+
+        function loadChurchInfo() {
+            $.ajax({
+                url: '/Attendance/GetChurchInfo',
+                type: 'GET',
+                data: { churchId: selectedChurchId },
+                success: function(response) {
+                    if (response.success) {
+                        const days = [response.meetingDay1, response.meetingDay2].join(', ');
+                        const today = new Date($('#attendanceDate').val());
+                        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                        const todayName = dayNames[today.getDay()];
+                        
+                        $('#meetingDays').text(days);
+                        $('#todayDay').text(todayName);
+                        
+                        const isMeetingDay = response.meetingDay1 === todayName || response.meetingDay2 === todayName;
+                        if (isMeetingDay) {
+                            $('#meetingStatus').html('<span class="badge bg-success ms-2"><i class="fas fa-check me-1"></i>Meeting Day</span>');
+                        } else {
+                            $('#meetingStatus').html('<span class="badge bg-warning ms-2"><i class="fas fa-exclamation-triangle me-1"></i>Not a Meeting Day</span>');
+                        }
+                        
+                        $('#churchInfo').slideDown();
+                        showAlert('Church selected: ' + $('#churchSelect option:selected').text(), 'info');
+                    }
+                }
+            });
+        }
+
+        function lookupMember(userId) {
+            if (!selectedChurchId) {
+                showAlert('Please select a church first', 'warning');
+                return;
+            }
+
+            if (!userId) {
+                resetMemberDetails();
+                return;
+            }
+
+            // Hide previous results
+            $('#memberDetails').hide();
+            $('#notFoundMessage').hide();
+            $('#markPresentBtn').prop('disabled', true);
+
+            $.ajax({
+                url: '/Attendance/GetMemberDetails',
+                type: 'POST',
+                data: { userId: userId },
+                success: function(response) {
+                    if (response.success) {
+                        // Check if member belongs to selected church
+                        if (response.churchId != selectedChurchId) {
+                            $('#notFoundMessage').slideDown();
+                            resetMemberDetails();
+                            return;
+                        }
+
+                        currentMember = response;
+                        displayMemberDetails(response);
+                        $('#markPresentBtn').prop('disabled', false);
+                        $('#notFoundMessage').hide();
+                        
+                        // Auto-focus on Mark Present button
+                        $('#markPresentBtn').focus();
+                    } else {
+                        $('#notFoundMessage').slideDown();
+                        resetMemberDetails();
+                    }
+                },
+                error: function() {
+                    $('#notFoundMessage').slideDown();
+                    resetMemberDetails();
+                }
+            });
+        }
+
+        function displayMemberDetails(member) {
+            // Display member image or avatar
+            let imageHtml = '';
+            const memberName = member.name || 'Unknown';
+            
+            // Check if member has profile image (you'll need to pass this from controller)
+            if (member.profileImage) {
+                imageHtml = `<img src="${member.profileImage}" alt="${memberName}" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;" />`;
+            } else {
+                // Generate avatar with initials
+                const nameParts = memberName.split(' ');
+                const initials = nameParts.length >= 2 
+                    ? (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase()
+                    : memberName.substring(0, 2).toUpperCase();
+                
+                // Generate color based on name
+                const colors = ['bg-primary', 'bg-success', 'bg-danger', 'bg-warning', 'bg-info'];
+                const colorIndex = Math.abs(memberName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % colors.length;
+                
+                imageHtml = `
+                    <div class="rounded-circle ${colors[colorIndex]} d-flex align-items-center justify-content-center text-white fw-bold" 
+                         style="width: 60px; height: 60px; font-size: 24px;">
+                        ${initials}
+                    </div>
+                `;
+            }
+            
+            $('#memberImageContainer').html(imageHtml);
+            $('#memberName').text(memberName);
+            $('#memberPhone').text(member.phone || 'N/A');
+            $('#memberFamily').text(member.family || 'N/A');
+            $('#memberId').val(member.memberId);
+            $('#memberDetails').slideDown();
+        }
+
+        function resetMemberDetails() {
+            $('#memberDetails').hide();
+            $('#markPresentBtn').prop('disabled', true);
+            currentMember = null;
+        }
+
+        function markAttendance() {
+            if (!currentMember) {
+                showAlert('Please lookup a member first', 'warning');
+                return;
+            }
+
+            const attendanceDate = $('#attendanceDate').val();
+            if (!attendanceDate) {
+                showAlert('Please select attendance date', 'warning');
+                return;
+            }
+
+            // Disable button during save
+            $('#markPresentBtn').prop('disabled', true);
+
+            const url = attendanceMode === 'family' ? '/Attendance/MarkFamilyPresent' : '/Attendance/MarkPresent';
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    churchId: selectedChurchId,
+                    userId: $('#userIdInput').val().trim(),
+                    attendanceDate: attendanceDate,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        let message = `✓ ${currentMember.name} marked as Present!`;
+                        if (attendanceMode === 'family' && response.familyCount > 0) {
+                            message += ` (+ ${response.familyCount} family member${response.familyCount > 1 ? 's' : ''})`;
+                        }
+                        showAlert(message, 'success');
+                        
+                        // Clear the form for next entry
+                        $('#userIdInput').val('').focus();
+                        resetMemberDetails();
+                        $('#notFoundMessage').hide();
+                        
+                        // Reload today's attendance
+                        loadTodayAttendance();
+                    } else {
+                        showAlert(response.message || 'Failed to mark attendance', 'danger');
+                        $('#markPresentBtn').prop('disabled', false);
+                    }
+                },
+                error: function() {
+                    showAlert('Error marking attendance. Please try again.', 'danger');
+                    $('#markPresentBtn').prop('disabled', false);
+                }
+            });
+        }
+
+        function loadTodayAttendance() {
+            const attendanceDate = $('#attendanceDate').val();
+            
+            if (!selectedChurchId) {
+                $('#todayAttendanceList').html(`
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Please select a church to view attendance records.
+                    </div>
+                `);
+                return;
+            }
+
+            $('#todayAttendanceList').html(`
+                <div class="text-center py-4">
+                    <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                    <p class="text-muted mt-2">Loading...</p>
+                </div>
+            `);
+
+            $.ajax({
+                url: '/Attendance/GetTodayAttendance',
+                type: 'GET',
+                data: {
+                    churchId: selectedChurchId,
+                    attendanceDate: attendanceDate
+                },
+                success: function(response) {
+                    if (response.success && response.records) {
+                        displayTodayAttendance(response.records);
+                    } else {
+                        $('#todayAttendanceList').html(`
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                No attendance records for today yet.
+                            </div>
+                        `);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading attendance:', error, xhr.responseText);
+                    $('#todayAttendanceList').html(`
+                        <div class="alert alert-danger">
+                            <i class="fas fa-times-circle me-2"></i>
+                            Error loading attendance records. Please try again.
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        function displayTodayAttendance(records) {
+            if (!records || records.length === 0) {
+                $('#todayAttendanceList').html('<p class="text-muted">No members found in this church.</p>');
+                return;
+            }
+
+            // Calculate totals including all members
+            const totalMembers = records.length;
+            const presentCount = records.filter(r => r.isPresent).length;
+            const absentCount = totalMembers - presentCount;
+            const percentage = totalMembers > 0 ? (presentCount * 100 / totalMembers).toFixed(1) : 0;
+
+            // Only show marked attendance records in the table
+            const markedRecords = records.filter(r => r.attendanceId > 0).reverse(); // Latest first
+
+            let attendanceHtml = '';
+            if (markedRecords.length > 0) {
+                // Mobile card layout
+                let mobileCards = '';
+                markedRecords.forEach(function(record) {
+                    const statusBadge = record.isPresent 
+                        ? '<span class="badge bg-success"><i class="fas fa-check me-1"></i>Present</span>'
+                        : '<span class="badge bg-danger"><i class="fas fa-times me-1"></i>Absent</span>';
+                    
+                    mobileCards += `
+                        <div class="card mb-3 d-md-none">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title">${record.memberName}</h6>
+                                    ${statusBadge}
+                                </div>
+                                <p class="mb-1"><strong>User ID:</strong> ${record.userId}</p>
+                                <p class="mb-2"><strong>Time:</strong> ${record.markedDate}</p>
+                                <button class="btn btn-sm btn-danger" onclick="deleteAttendance(${record.attendanceId}, '${record.memberName}')" title="Delete">
+                                    <i class="fas fa-trash me-1"></i>Delete
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                // Desktop table layout
+                let desktopTable = `
+                    <div class="table-responsive d-none d-md-block">
+                        <table class="table table-sm table-hover">
+                            <thead><tr><th>User ID</th><th>Name</th><th>Status</th><th>Time</th><th>Action</th></tr></thead>
+                            <tbody>`;
+                
+                markedRecords.forEach(function(record) {
+                    const statusBadge = record.isPresent 
+                        ? '<span class="badge bg-success"><i class="fas fa-check me-1"></i>Present</span>'
+                        : '<span class="badge bg-danger"><i class="fas fa-times me-1"></i>Absent</span>';
+                    
+                    desktopTable += `<tr>
+                        <td><strong>${record.userId}</strong></td>
+                        <td>${record.memberName}</td>
+                        <td>${statusBadge}</td>
+                        <td><small class="text-muted">${record.markedDate}</small></td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="deleteAttendance(${record.attendanceId}, '${record.memberName}')" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+                
+                desktopTable += '</tbody></table></div>';
+                attendanceHtml = mobileCards + desktopTable;
+            } else {
+                attendanceHtml = '<p class="text-muted">No attendance marked yet. All members are absent.</p>';
+            }
+            
+            const summaryHtml = `
+                <div class="row text-center mb-3">
+                    <div class="col-4">
+                        <div class="card bg-success text-white" style="cursor: pointer;" onclick="showPresentMembers()" title="Click to view present members">
+                            <div class="card-body py-3">
+                                <h3 class="mb-0">${presentCount}</h3>
+                                <small>Present <i class="fas fa-eye ms-1"></i></small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="card bg-danger text-white" style="cursor: pointer;" onclick="showAbsentMembers()" title="Click to view absent members">
+                            <div class="card-body py-3">
+                                <h3 class="mb-0">${absentCount}</h3>
+                                <small>Absent <i class="fas fa-eye ms-1"></i></small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="card bg-primary text-white h-100">
+                            <div class="card-body py-3 d-flex flex-column justify-content-center">
+                                <h3 class="mb-0">${percentage}%</h3>
+                                <small class="d-none d-md-inline">Attendance</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Total Members:</strong> ${totalMembers} | 
+                    <strong>Marked:</strong> ${markedRecords.length} | 
+                    <strong>Pending:</strong> ${totalMembers - markedRecords.length}
+                </div>
+            `;
+            
+            $('#todayAttendanceList').html(summaryHtml + attendanceHtml);
+        }
+
+        function showPresentMembers() {
+            if (!selectedChurchId) {
+                showAlert('Please select a church first', 'warning');
+                return;
+            }
+
+            const attendanceDate = $('#attendanceDate').val();
+
+            $('#todayAttendanceList').html(`
+                <div class="text-center py-4">
+                    <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                    <p class="text-muted mt-2">Loading present members...</p>
+                </div>
+            `);
+
+            $.ajax({
+                url: '/Attendance/GetPresentMembers',
+                type: 'GET',
+                data: {
+                    churchId: selectedChurchId,
+                    attendanceDate: attendanceDate
+                },
+                success: function(response) {
+                    if (response.success && response.members) {
+                        displayPresentMembers(response.members);
+                    } else {
+                        showAlert('Error loading present members', 'danger');
+                        loadTodayAttendance();
+                    }
+                },
+                error: function() {
+                    showAlert('Error loading present members', 'danger');
+                    loadTodayAttendance();
+                }
+            });
+        }
+
+        function showAbsentMembers() {
+            if (!selectedChurchId) {
+                showAlert('Please select a church first', 'warning');
+                return;
+            }
+
+            const attendanceDate = $('#attendanceDate').val();
+
+            $('#todayAttendanceList').html(`
+                <div class="text-center py-4">
+                    <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                    <p class="text-muted mt-2">Loading absent members...</p>
+                </div>
+            `);
+
+            $.ajax({
+                url: '/Attendance/GetAbsentMembers',
+                type: 'GET',
+                data: {
+                    churchId: selectedChurchId,
+                    attendanceDate: attendanceDate
+                },
+                success: function(response) {
+                    if (response.success && response.members) {
+                        displayAbsentMembers(response.members);
+                    } else {
+                        showAlert('Error loading absent members', 'danger');
+                        loadTodayAttendance();
+                    }
+                },
+                error: function() {
+                    showAlert('Error loading absent members', 'danger');
+                    loadTodayAttendance();
+                }
+            });
+        }
+
+        function displayPresentMembers(members) {
+            if (members.length === 0) {
+                $('#todayAttendanceList').html(`
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No members marked as present today.
+                    </div>
+                `);
+                return;
+            }
+
+            let html = `
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-check text-success me-2"></i>
+                        Present Members (${members.length})
+                    </h5>
+                    <button class="btn btn-sm btn-primary" onclick="loadTodayAttendance()">
+                        <i class="fas fa-arrow-left me-2 d-none d-md-inline"></i><span class="d-none d-md-inline">Back</span><i class="fas fa-arrow-left d-md-none"></i>
+                    </button>
+                </div>
+            `;
+
+            // Mobile cards
+            let mobileCards = '';
+            members.forEach(function (member) {
+                let attendanceBadges = '';
+                
+                if (member.meetingDayDates && member.meetingDayDates.length > 0) {
+                    const attendanceMap = {};
+                    if (member.lastWeekAttendance) {
+                        member.lastWeekAttendance.forEach(att => {
+                            attendanceMap[att.date] = att.isPresent;
+                        });
+                    }
+
+                    attendanceBadges = `
+                        <div class="attendance-scroll-container">
+                            <button class="attendance-nav-btn attendance-nav-left" onclick="scrollAttendance(this, 'left')" style="display: none;">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div class="attendance-badges" onscroll="updateNavButtons(this)">
+                    `;
+
+                    member.meetingDayDates.forEach(function(meetingDay) {
+                        const isPresent = attendanceMap[meetingDay.date];
+                        let badgeClass, statusText;
+                        
+                        if (isPresent === true) {
+                            badgeClass = 'bg-success';
+                            statusText = 'Present';
+                        } else {
+                            badgeClass = 'bg-danger';
+                            statusText = isPresent === false ? 'Absent' : 'No Record (Absent)';
+                        }
+                        
+                        const title = meetingDay.displayDate + ' (' + meetingDay.dayName + ') - ' + statusText;
+                        const dayNumber = new Date(meetingDay.date).getDate();
+                        const dayShort = meetingDay.dayName.substring(0, 3);
+                        
+                        attendanceBadges += `
+                            <span class="badge ${badgeClass} attendance-badge" title="${title}">
+                                ${dayNumber} ${dayShort}
+                            </span>
+                        `;
+                    });
+
+                    attendanceBadges += `
+                            </div>
+                            <button class="attendance-nav-btn attendance-nav-right" onclick="scrollAttendance(this, 'right')">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    attendanceBadges = '<small class="text-muted">No meeting day data</small>';
+                }
+
+                mobileCards += `
+                    <div class="card mb-3 d-md-none">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-title">${member.name}</h6>
+                                <span class="badge bg-primary">${member.userId}</span>
+                            </div>
+                            <p class="mb-2"><strong>Phone:</strong> ${member.phone || 'N/A'}</p>
+                            <div class="mb-0">
+                                <small class="text-muted d-block mb-2">Last 3 Weeks (Meeting Days Only)</small>
+                                ${attendanceBadges}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Desktop table
+            let desktopTable = `
+                <div class="table-responsive d-none d-md-block">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th style="min-width: 400px;">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">Last 3 Weeks (Meeting Days Only)</small>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            members.forEach(function (member) {
+                let attendanceBadges = '';
+                
+                if (member.meetingDayDates && member.meetingDayDates.length > 0) {
+                    const attendanceMap = {};
+                    if (member.lastWeekAttendance) {
+                        member.lastWeekAttendance.forEach(att => {
+                            attendanceMap[att.date] = att.isPresent;
+                        });
+                    }
+
+                    attendanceBadges = `
+                        <div class="attendance-scroll-container">
+                            <button class="attendance-nav-btn attendance-nav-left" onclick="scrollAttendance(this, 'left')" style="display: none;">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div class="attendance-badges" onscroll="updateNavButtons(this)">
+                    `;
+
+                    member.meetingDayDates.forEach(function(meetingDay) {
+                        const isPresent = attendanceMap[meetingDay.date];
+                        let badgeClass, statusText;
+                        
+                        if (isPresent === true) {
+                            badgeClass = 'bg-success';
+                            statusText = 'Present';
+                        } else {
+                            badgeClass = 'bg-danger';
+                            statusText = isPresent === false ? 'Absent' : 'No Record (Absent)';
+                        }
+                        
+                        const title = meetingDay.displayDate + ' (' + meetingDay.dayName + ') - ' + statusText;
+                        const dayNumber = new Date(meetingDay.date).getDate();
+                        const dayShort = meetingDay.dayName.substring(0, 3);
+                        
+                        attendanceBadges += `
+                            <span class="badge ${badgeClass} attendance-badge" title="${title}">
+                                ${dayNumber} ${dayShort}
+                            </span>
+                        `;
+                    });
+
+                    attendanceBadges += `
+                            </div>
+                            <button class="attendance-nav-btn attendance-nav-right" onclick="scrollAttendance(this, 'right')">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    attendanceBadges = '<small class="text-muted">No meeting day data</small>';
+                }
+
+                desktopTable += `
+                    <tr>
+                        <td><strong>${member.userId}</strong></td>
+                        <td>${member.name}</td>
+                        <td>${member.phone || 'N/A'}</td>
+                        <td>${attendanceBadges}</td>
+                    </tr>
+                `;
+            });
+
+            desktopTable += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            html += mobileCards + desktopTable + `
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Legend:</strong> 
+                    <span class="badge bg-success ms-2">Present</span>
+                    <span class="badge bg-danger ms-2">Absent/No Record</span>
+                    <br>
+                    <small>Shows last 21 meeting days (3 weeks). Green = Present, Red = Absent or No Record.</small>
+                </div>
+            `;
+
+            $('#todayAttendanceList').html(html);
+
+            // Initialize navigation buttons visibility after a short delay
+            setTimeout(function() {
+                $('.attendance-badges').each(function() {
+                    updateNavButtons(this);
+                });
+            }, 100);
+        }
+
+        function displayAbsentMembers(members) {
+            if (!members || members.length === 0) {
+                const html = `
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Great!</strong> All members are present today!
+                    </div>
+                    <button class="btn btn-primary" onclick="loadTodayAttendance()">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Attendance
+                    </button>
+                `;
+                $('#todayAttendanceList').html(html);
+                return;
+            }
+
+            let html = `
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-times text-danger me-2"></i>
+                        Absent Members (${members.length})
+                    </h5>
+                    <button class="btn btn-sm btn-primary" onclick="loadTodayAttendance()">
+@*  *@                        <i class="fas fa-arrow-left me-2 d-none d-md-inline"></i><span class="d-none d-md-inline">Back</span><i class="fas fa-arrow-left d-md-none"></i>
+                    </button>
+                </div>
+            `;
+
+            // Mobile cards
+            let mobileCards = '';
+            members.forEach(function(member) {
+                let attendanceBadges = '';
+                
+                if (member.meetingDayDates && member.meetingDayDates.length > 0) {
+                    const attendanceMap = {};
+                    if (member.lastWeekAttendance) {
+                        member.lastWeekAttendance.forEach(att => {
+                            attendanceMap[att.date] = att.isPresent;
+                        });
+                    }
+
+                    attendanceBadges = `
+                        <div class="attendance-scroll-container">
+                            <button class="attendance-nav-btn attendance-nav-left" onclick="scrollAttendance(this, 'left')" style="display: none;">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div class="attendance-badges" onscroll="updateNavButtons(this)">
+                    `;
+
+                    member.meetingDayDates.forEach(function(meetingDay) {
+                        const isPresent = attendanceMap[meetingDay.date];
+                        let badgeClass, statusText;
+                        
+                        if (isPresent === true) {
+                            badgeClass = 'bg-success';
+                            statusText = 'Present';
+                        } else {
+                            badgeClass = 'bg-danger';
+                            statusText = isPresent === false ? 'Absent' : 'No Record (Absent)';
+                        }
+                        
+                        const title = meetingDay.displayDate + ' (' + meetingDay.dayName + ') - ' + statusText;
+                        const dayNumber = new Date(meetingDay.date).getDate();
+                        const dayShort = meetingDay.dayName.substring(0, 3);
+                        
+                        attendanceBadges += `
+                            <span class="badge ${badgeClass} attendance-badge" title="${title}">
+                                ${dayNumber} ${dayShort}
+                            </span>
+                        `;
+                    });
+
+                    attendanceBadges += `
+                            </div>
+                            <button class="attendance-nav-btn attendance-nav-right" onclick="scrollAttendance(this, 'right')">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    attendanceBadges = '<small class="text-muted">No meeting day data</small>';
+                }
+
+                mobileCards += `
+                    <div class="card mb-3 d-md-none">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-title">${member.name}</h6>
+                                <span class="badge bg-primary">${member.userId}</span>
+                            </div>
+                            <p class="mb-2"><strong>Phone:</strong> ${member.phone || 'N/A'}</p>
+                            <div class="mb-3">
+                                <small class="text-muted d-block mb-2">Last 3 Weeks (Meeting Days Only)</small>
+                                ${attendanceBadges}
+                            </div>
+                            <button class="btn btn-sm btn-success" onclick="quickMarkPresent('${member.userId}', '${member.name}')" title="Mark as Present">
+                                <i class="fas fa-check me-1"></i>Mark Present
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Desktop table
+            let desktopTable = `
+                <div class="table-responsive d-none d-md-block">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th style="min-width: 400px;">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">Last 3 Weeks (Meeting Days Only)</small>
+                                    </div>
+                                </th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            members.forEach(function(member) {
+                let attendanceBadges = '';
+                
+                if (member.meetingDayDates && member.meetingDayDates.length > 0) {
+                    const attendanceMap = {};
+                    if (member.lastWeekAttendance) {
+                        member.lastWeekAttendance.forEach(att => {
+                            attendanceMap[att.date] = att.isPresent;
+                        });
+                    }
+
+                    attendanceBadges = `
+                        <div class="attendance-scroll-container">
+                            <button class="attendance-nav-btn attendance-nav-left" onclick="scrollAttendance(this, 'left')" style="display: none;">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div class="attendance-badges" onscroll="updateNavButtons(this)">
+                    `;
+
+                    member.meetingDayDates.forEach(function(meetingDay) {
+                        const isPresent = attendanceMap[meetingDay.date];
+                        let badgeClass, statusText;
+                        
+                        if (isPresent === true) {
+                            badgeClass = 'bg-success';
+                            statusText = 'Present';
+                        } else {
+                            badgeClass = 'bg-danger';
+                            statusText = isPresent === false ? 'Absent' : 'No Record (Absent)';
+                        }
+                        
+                        const title = meetingDay.displayDate + ' (' + meetingDay.dayName + ') - ' + statusText;
+                        const dayNumber = new Date(meetingDay.date).getDate();
+                        const dayShort = meetingDay.dayName.substring(0, 3);
+                        
+                        attendanceBadges += `
+                            <span class="badge ${badgeClass} attendance-badge" title="${title}">
+                                ${dayNumber} ${dayShort}
+                            </span>
+                        `;
+                    });
+
+                    attendanceBadges += `
+                            </div>
+                            <button class="attendance-nav-btn attendance-nav-right" onclick="scrollAttendance(this, 'right')">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    attendanceBadges = '<small class="text-muted">No meeting day data</small>';
+                }
+
+                desktopTable += `
+                    <tr>
+                        <td><strong>${member.userId}</strong></td>
+                        <td>${member.name}</td>
+                        <td>${member.phone || 'N/A'}</td>
+                        <td>${attendanceBadges}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success" onclick="quickMarkPresent('${member.userId}', '${member.name}')" title="Mark as Present">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            desktopTable += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            html += mobileCards + desktopTable + `
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Legend:</strong> 
+                    <span class="badge bg-success ms-2">Present</span>
+                    <span class="badge bg-danger ms-2">Absent/No Record</span>
+                    <br>
+                    <small>Shows last 21 meeting days (3 weeks). Green = Present, Red = Absent or No Record.</small>
+                </div>
+                <style>
+                    .attendance-scroll-container {
+                        position: relative;
+                        display: flex;
+                        align-items: center;
+                        gap: 5px;
+                    }
+                    .attendance-badges {
+                        display: flex;
+                        gap: 4px;
+                        overflow-x: auto;
+                        scroll-behavior: smooth;
+                        padding: 5px 0;
+                        max-width: 350px;
+                        scrollbar-width: thin;
+                    }
+                    .attendance-badges::-webkit-scrollbar {
+                        height: 4px;
+                    }
+                    .attendance-badges::-webkit-scrollbar-thumb {
+                        background: #888;
+                        border-radius: 4px;
+                    }
+                    .attendance-badge {
+                        white-space: nowrap;
+                        font-size: 0.75rem;
+                        padding: 4px 8px;
+                        cursor: help;
+                        flex-shrink: 0;
+                    }
+                    .attendance-nav-btn {
+                        background: #007bff;
+                        color: white;
+                        border: none;
+                        border-radius: 50%;
+                        width: 28px;
+                        height: 28px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        flex-shrink: 0;
+                        padding: 0;
+                    }
+                    .attendance-nav-btn:hover {
+                        background: #0056b3;
+                    }
+                    .attendance-nav-btn:disabled {
+                        background: #ccc;
+                        cursor: not-allowed;
+                    }
+                </style>
+            `;
+
+            $('#todayAttendanceList').html(html);
+            
+            // Initialize navigation buttons visibility
+            setTimeout(function() {
+                $('.attendance-badges').each(function() {
+                    updateNavButtons(this);
+                });
+            }, 100);
+        }
+
+        function scrollAttendance(button, direction) {
+            const container = $(button).siblings('.attendance-badges')[0];
+            const scrollAmount = 200;
+            
+            if (direction === 'left') {
+                container.scrollLeft -= scrollAmount;
+            } else {
+                container.scrollLeft += scrollAmount;
+            }
+            
+            // Update button visibility after scroll
+            setTimeout(function() {
+                updateNavButtons(container);
+            }, 300);
+        }
+
+        function updateNavButtons(container) {
+            const $container = $(container);
+            const scrollLeft = $container.scrollLeft();
+            const scrollWidth = $container[0].scrollWidth;
+            const clientWidth = $container[0].clientWidth;
+            
+            const $parent = $container.parent();
+            const $leftBtn = $parent.find('.attendance-nav-left');
+            const $rightBtn = $parent.find('.attendance-nav-right');
+            
+            // Show/hide left button
+            if (scrollLeft > 10) {
+                $leftBtn.show();
+            } else {
+                $leftBtn.hide();
+            }
+            
+            // Show/hide right button
+            if (scrollLeft + clientWidth < scrollWidth - 10) {
+                $rightBtn.show();
+            } else {
+                $rightBtn.hide();
+            }
+        }
+
+        function quickMarkPresent(userId, memberName) {
+            const attendanceDate = $('#attendanceDate').val();
+
+            $.ajax({
+                url: '/Attendance/MarkPresent',
+                type: 'POST',
+                data: {
+                    churchId: selectedChurchId,
+                    userId: userId,
+                    attendanceDate: attendanceDate,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showAlert(`✓ ${memberName} marked as Present!`, 'success');
+                        showAbsentMembers(); // Refresh the absent list
+                    } else {
+                        showAlert(response.message || 'Failed to mark attendance', 'danger');
+                    }
+                },
+                error: function() {
+                    showAlert('Error marking attendance. Please try again.', 'danger');
+                }
+            });
+        }
+
+        function deleteAttendance(attendanceId, memberName) {
+            if (!confirm(`Are you sure you want to delete attendance record for ${memberName}?\n\nThis will mark them as absent again.`)) {
+                return;
+            }
+
+            $.ajax({
+                url: '/Attendance/DeleteAttendance',
+                type: 'POST',
+                data: {
+                    id: attendanceId,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showAlert(`✓ Attendance record for ${memberName} deleted successfully!`, 'success');
+                        loadTodayAttendance();
+                    } else {
+                        showAlert(response.message || 'Failed to delete attendance', 'danger');
+                    }
+                },
+                error: function() {
+                    showAlert('Error deleting attendance. Please try again.', 'danger');
+                }
+            });
+        }
+
+        function showAlert(message, type) {
+            const iconMap = {
+                'success': 'check-circle',
+                'danger': 'times-circle',
+                'warning': 'exclamation-triangle',
+                'info': 'info-circle'
+            };
+            
+            const icon = iconMap[type] || 'info-circle';
+            
+            const alert = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${icon} me-2"></i>${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            $('#alertContainer').html(alert);
+            
+            // Auto-dismiss success messages after 3 seconds
+            if (type === 'success') {
+                setTimeout(function() {
+                    $('#alertContainer .alert').fadeOut();
+                }, 3000);
+            }
+        }
+    </script>
+    @Html.AntiForgeryToken()
+}
+

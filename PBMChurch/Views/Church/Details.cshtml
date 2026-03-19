@@ -1,0 +1,450 @@
+@model dynamic
+
+@{
+    ViewData["Title"] = $"{Model.Church.ChurchName} - Details";
+}
+
+<!-- Church Header -->
+<div class="church-header mb-4">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-center d-md-block">
+                <div>
+                    <h1 class="church-title">
+                        <i class="fas fa-church me-3"></i>@Model.Church.ChurchName
+                    </h1>
+                    <p class="church-subtitle">
+                        <i class="fas fa-map-marker-alt me-2"></i>@Model.Church.Location
+                        <span class="ms-3">
+                            @if (Model.Church.Status == "Active")
+                            {
+                                <span class="badge bg-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Inactive</span>
+                            }
+                        </span>
+                    </p>
+                </div>
+                <div class="dropdown d-md-none">
+                    <button class="btn btn-outline-light btn-sm" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@Model.Church.ChurchId"><i class="fas fa-edit me-2"></i>Edit Church</a></li>
+                        <li><a class="dropdown-item" asp-action="Index"><i class="fas fa-arrow-left me-2"></i>Back to List</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-end d-none d-md-block">
+            <div class="d-flex gap-2 justify-content-end">
+                <a asp-action="Edit" asp-route-id="@Model.Church.ChurchId" class="btn btn-warning" title="Edit Church">
+                    <i class="fas fa-edit"></i><span class="d-none d-lg-inline ms-1">Edit</span>
+                </a>
+                <a asp-action="Index" class="btn btn-secondary" title="Back to List">
+                    <i class="fas fa-arrow-left"></i><span class="d-none d-lg-inline ms-1">Back</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Meeting Schedule -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card meeting-schedule-card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-6 text-center">
+                        <h6 class="mb-2">First Meeting</h6>
+                        <p class="mb-0">@Model.Church.MeetingDay1</p>
+                    </div>
+                    <div class="col-6 text-center">
+                        <h6 class="mb-2">Second Meeting</h6>
+                        <p class="mb-0">@Model.Church.MeetingDay2</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row g-2 g-md-4 mb-5">
+    <div class="col-xl-3 col-lg-6 col-md-6 col-12">
+        <div class="stat-card members-card">
+            <div class="card-body text-center">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="stat-number">@Model.TotalMembers</h3>
+                <p class="stat-label">Total Members</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-lg-6 col-md-6 col-12">
+        <div class="stat-card families-card">
+            <div class="card-body text-center">
+                <div class="stat-icon">
+                    <i class="fas fa-home"></i>
+                </div>
+                <h3 class="stat-number">@Model.TotalFamilies</h3>
+                <p class="stat-label">Total Families</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-lg-6 col-md-6 col-12">
+        <div class="stat-card birthdays-card">
+            <div class="card-body text-center">
+                <div class="stat-icon">
+                    <i class="fas fa-birthday-cake"></i>
+                </div>
+                <h3 class="stat-number">@Model.TodayBirthdays</h3>
+                <p class="stat-label">Today's Birthdays</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-lg-6 col-md-6 col-12">
+        <div class="stat-card anniversaries-card">
+            <div class="card-body text-center">
+                <div class="stat-icon">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <h3 class="stat-number">@Model.TodayAnniversaries</h3>
+                <p class="stat-label">Today's Anniversaries</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Financial Overview -->
+<div class="row g-2 g-md-4 mb-4">
+    <div class="col-xl-4 col-lg-4 col-md-12">
+        <div class="card financial-card income-card">
+            <div class="card-header">
+                <i class="fas fa-arrow-up me-2"></i>Total Income
+            </div>
+            <div class="card-body text-center">
+                <h2 class="financial-amount">₹ @Model.TotalIncome.ToString("N2")</h2>
+                <small class="text-muted">All Time</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 col-lg-4 col-md-12">
+        <div class="card financial-card expense-card">
+            <div class="card-header">
+                <i class="fas fa-arrow-down me-2"></i>Total Expense
+            </div>
+            <div class="card-body text-center">
+                <h2 class="financial-amount">₹ @Model.TotalExpense.ToString("N2")</h2>
+                <small class="text-muted">All Time</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 col-lg-4 col-md-12">
+        <div class="card financial-card balance-card">
+            <div class="card-header">
+                <i class="fas fa-balance-scale me-2"></i>Net Balance
+            </div>
+            <div class="card-body text-center">
+                <h2 class="financial-amount">₹ @((Model.TotalIncome - Model.TotalExpense).ToString("N2"))</h2>
+                <small class="text-muted">All Time</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Financial Summary -->
+<div class="row g-2 g-md-4 mb-4">
+    <div class="col-xl-6 col-lg-6 col-md-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <i class="fas fa-calendar-month me-2"></i>This Month's Income
+            </div>
+            <div class="card-body text-center">
+                <h3 class="text-success">₹ @Model.MonthlyIncome.ToString("N2")</h3>
+                <small class="text-muted">@DateTime.Now.ToString("MMMM yyyy")</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6 col-lg-6 col-md-12">
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                <i class="fas fa-calendar-month me-2"></i>This Month's Expense
+            </div>
+            <div class="card-body text-center">
+                <h3 class="text-danger">₹ @Model.MonthlyExpense.ToString("N2")</h3>
+                <small class="text-muted">@DateTime.Now.ToString("MMMM yyyy")</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Attendance and Family Information -->
+<div class="row g-4">
+    <div class="col-xl-8 col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-line me-2"></i>Recent Attendance (Last 30 Days)
+            </div>
+            <div class="card-body">
+                @if (Model.RecentAttendance != null && ((IEnumerable<dynamic>)Model.RecentAttendance).Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th class="text-center">Present</th>
+                                    <th class="text-center">Total</th>
+                                    <th class="text-center">Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var attendance in Model.RecentAttendance)
+                                {
+                                    var percentage = attendance.Total > 0 ? (attendance.Present * 100.0 / attendance.Total) : 0;
+                                    <tr>
+                                        <td>@attendance.Date.ToString("MMM dd, yyyy")</td>
+                                        <td class="text-center"><span class="badge bg-success">@attendance.Present</span></td>
+                                        <td class="text-center">@attendance.Total</td>
+                                        <td class="text-center">
+                                            <span class="badge @(percentage >= 80 ? "bg-success" : percentage >= 60 ? "bg-warning" : "bg-danger")">
+                                                @percentage.ToString("F1")%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No attendance records found for the last 30 days.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-home me-2"></i>Top Families by Size
+            </div>
+            <div class="card-body">
+                @if (Model.FamilyStats != null && ((IEnumerable<dynamic>)Model.FamilyStats).Any())
+                {
+                    @foreach (var family in Model.FamilyStats)
+                    {
+                        <div class="family-item mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">@family.FamilyName</h6>
+                                    <small class="text-muted">Family</small>
+                                </div>
+                                <span class="badge bg-primary">@family.MemberCount members</span>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="fas fa-home fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No family information available.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .church-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+    }
+
+    .church-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .church-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+
+    .meeting-schedule-card {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border: none;
+    }
+
+    .meeting-days .badge {
+        font-size: 1.1rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: none;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-icon {
+        font-size: 3rem;
+        opacity: 0.2;
+        position: absolute;
+        top: 20px;
+        right: 20px;
+    }
+
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #2c3e50;
+    }
+
+    .stat-label {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #7f8c8d;
+        margin-bottom: 0;
+    }
+
+    .members-card {
+        background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+    }
+
+    .families-card {
+        background: linear-gradient(135deg, #e8f4fd 0%, #c3e9ff 100%);
+    }
+
+    .birthdays-card {
+        background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    }
+
+    .anniversaries-card {
+        background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%);
+    }
+
+    .family-item {
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        border-left: 4px solid #007bff;
+    }
+
+    .financial-card .card-header {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .income-card .card-header {
+        background: #27ae60;
+        color: white;
+    }
+
+    .expense-card .card-header {
+        background: #c0392b;
+        color: white;
+    }
+
+    .balance-card .card-header {
+        background: #16a085;
+        color: white;
+    }
+
+    .financial-amount {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .income-card .financial-amount {
+        color: #27ae60;
+    }
+
+    .expense-card .financial-amount {
+        color: #c0392b;
+    }
+
+    .balance-card .financial-amount {
+        color: #16a085;
+    }
+
+    @@media (max-width: 768px) {
+        .church-header {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .church-title {
+            font-size: 1.8rem;
+        }
+
+        .church-subtitle {
+            font-size: 1rem;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+        }
+
+        .financial-amount {
+            font-size: 2rem;
+        }
+
+        .stat-card {
+            padding: 20px;
+            margin: 10px;
+        }
+
+        .card-body {
+            padding: 1.5rem !important;
+        }
+
+        .family-item {
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .meeting-schedule-card .card-body {
+            padding: 1.25rem !important;
+        }
+
+        .row {
+            margin: 0 -10px;
+        }
+
+        .col-xl-3, .col-xl-4, .col-xl-6, .col-xl-8 {
+            padding: 0 10px;
+        }
+    }
+</style>

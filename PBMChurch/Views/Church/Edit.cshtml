@@ -1,0 +1,149 @@
+@model PBMChurch.Models.Church
+
+@{
+    ViewData["Title"] = "Edit Church";
+}
+
+<div class="page-header">
+    <h2><i class="fas fa-edit me-2"></i>Edit Church</h2>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to List
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="ChurchId" />
+                    <input type="hidden" asp-for="CreatedDate" />
+                    <input type="hidden" asp-for="CreatedBy" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="ChurchName" class="form-label fw-bold"></label>
+                        <input asp-for="ChurchName" class="form-control" />
+                        <span asp-validation-for="ChurchName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Location" class="form-label fw-bold"></label>
+                        <textarea asp-for="Location" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Location" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="MeetingDay1" class="form-label fw-bold"></label>
+                            <select asp-for="MeetingDay1" class="form-select">
+                                <option value="">Select Day</option>
+                                <option value="Sunday">Sunday</option>
+                                <option value="Monday">Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                                <option value="Saturday">Saturday</option>
+                            </select>
+                            <span asp-validation-for="MeetingDay1" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="MeetingDay2" class="form-label fw-bold"></label>
+                            <select asp-for="MeetingDay2" class="form-select">
+                                <option value="">Select Day</option>
+                                <option value="Sunday">Sunday</option>
+                                <option value="Monday">Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                                <option value="Saturday">Saturday</option>
+                            </select>
+                            <span asp-validation-for="MeetingDay2" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Status" class="form-label fw-bold"></label>
+                        <select asp-for="Status" class="form-select">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger small"></span>
+                    </div>
+
+                    <hr class="my-4">
+                    <h5 class="mb-3"><i class="fas fa-whatsapp text-success me-2"></i>WhatsApp Configuration</h5>
+                    <p class="text-muted small">Configure WhatsApp API for this church. Each church can have its own WhatsApp instance.</p>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input asp-for="WhatsAppEnabled" class="form-check-input" type="checkbox" />
+                            <label asp-for="WhatsAppEnabled" class="form-check-label fw-bold"></label>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="WhatsAppInstanceId" class="form-label"></label>
+                            <input asp-for="WhatsAppInstanceId" class="form-control" placeholder="7105406813" />
+                            <small class="text-muted">Your Green API Instance ID</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="WhatsAppApiToken" class="form-label"></label>
+                            <input asp-for="WhatsAppApiToken" class="form-control" placeholder="API Token" />
+                            <small class="text-muted">Your Green API Token</small>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="WhatsAppApiUrl" class="form-label"></label>
+                            <input asp-for="WhatsAppApiUrl" class="form-control" placeholder="https://7105.api.green-api.com" />
+                            <small class="text-muted">Default: https://api.green-api.com</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="WhatsAppPhone" class="form-label"></label>
+                            <input asp-for="WhatsAppPhone" class="form-control" placeholder="+91 9876543210" />
+                            <small class="text-muted">Phone linked to this instance</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="BirthdayGroupId" class="form-label"></label>
+                        <input asp-for="BirthdayGroupId" class="form-control" placeholder="120363XXXXXXXXXX@g.us" />
+                        <small class="text-muted">WhatsApp Group for birthday announcements. <a href="/Automation/ShowGroups" target="_blank">Get Group IDs</a></small>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="GeneralGroupId" class="form-label"></label>
+                            <input asp-for="GeneralGroupId" class="form-control" placeholder="120363XXXXXXXXXX@g.us" />
+                            <small class="text-muted">General announcements group</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="PrayerGroupId" class="form-label"></label>
+                            <input asp-for="PrayerGroupId" class="form-control" placeholder="120363XXXXXXXXXX@g.us" />
+                            <small class="text-muted">Prayer requests group</small>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Update Church
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

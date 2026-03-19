@@ -1,0 +1,119 @@
+@model PBMChurch.Models.WishTemplate
+@{
+    ViewData["Title"] = "Create Wish Template";
+    var types = ViewBag.Types as string[];
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-plus"></i> Create @Model.Type Wish Template
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Type" class="form-label">Template Type</label>
+                                <select asp-for="Type" class="form-select">
+                                    @foreach (var type in types)
+                                    {
+                                        <option value="@type" selected="@(type == Model.Type)">@type</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Type" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Upload Image</label>
+                                <input type="file" name="imageFile" class="form-control" accept="image/*">
+                                @if (Model.ImageData != null)
+                                {
+                                    <div class="mt-2">
+                                        <img src="@Url.Action("GetImage", "Wishes", new { id = Model.Id })" class="img-thumbnail" style="max-height: 100px;" alt="Current Image">
+                                        <small class="text-muted d-block">Current image (will be replaced if new image uploaded)</small>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="MessageText" class="form-label">Message Text</label>
+                            <textarea asp-for="MessageText" class="form-control" rows="6" 
+                                      placeholder="Enter your message here. Use {Name} as placeholder for member name.&#10;&#10;Example:&#10;Happy Birthday {Name}! May God bless you abundantly on your special day."></textarea>
+                            <div class="form-text">
+                                <strong>Available placeholders:</strong> {Name} - Will be replaced with member's name
+                            </div>
+                            <span asp-validation-for="MessageText" class="text-danger"></span>
+                        </div>
+
+                        @if (Model.Type == "Event" || Model.Type == "Bible" || Model.Type == "General")
+                        {
+                            <div class="mb-3">
+                                <label asp-for="YouTubeUrl" class="form-label">YouTube URL (Optional)</label>
+                                <input asp-for="YouTubeUrl" class="form-control" placeholder="https://www.youtube.com/watch?v=...">
+                                <div class="form-text">Add YouTube link for sermons or related content</div>
+                                <span asp-validation-for="YouTubeUrl" class="text-danger"></span>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="IsActive" class="form-check-input" type="checkbox" checked="@Model.IsActive">
+                                <label asp-for="IsActive" class="form-check-label">
+                                    Active Template
+                                </label>
+                            </div>
+                            <div class="form-text">Only active templates will be used for automation</div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="@Url.Action("Index")" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to List
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Create Template
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-eye"></i> Message Preview</h5>
+                </div>
+                <div class="card-body">
+                    <div id="messagePreview" class="border p-3 bg-light">
+                        <em>Type a message above to see preview...</em>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Update preview when message text changes
+            $('#MessageText').on('input', function() {
+                var message = $(this).val();
+                if (message.trim() === '') {
+                    $('#messagePreview').html('<em>Type a message above to see preview...</em>');
+                } else {
+                    // Replace {Name} with sample name for preview
+                    var preview = message.replace(/{Name}/g, '<strong>John Doe</strong>');
+                    $('#messagePreview').html(preview.replace(/\n/g, '<br>'));
+                }
+            });
+
+            // Trigger preview update on page load
+            $('#MessageText').trigger('input');
+        });
+    </script>
+}
